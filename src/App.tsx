@@ -20,9 +20,9 @@ function usePrivacyRoute() {
   return isPrivacy
 }
 
-type Handlers = { onFile: (file: File) => void; onSample: () => void; onCancel: () => void }
+type Handlers = { onFile: (file: File) => void; onSample: () => void; onCancel: () => void; questionClosed: boolean; onQuestionClosed: () => void }
 
-function screenFor(state: LoadState, { onFile, onSample, onCancel }: Handlers): ReactNode {
+function screenFor(state: LoadState, { onFile, onSample, onCancel, questionClosed, onQuestionClosed }: Handlers): ReactNode {
   switch (state.phase) {
     case 'idle':
       return <Landing notice={state.notice} onFile={onFile} onSample={onSample} />
@@ -31,16 +31,17 @@ function screenFor(state: LoadState, { onFile, onSample, onCancel }: Handlers): 
     case 'refused':
       return <Refused refusal={state.refusal} onFile={onFile} />
     case 'ready':
-      return <Workspace key={state.id} fileName={state.fileName} file={state.file} isSample={state.isSample} onFile={onFile} />
+      return <Workspace key={state.id} fileName={state.fileName} file={state.file} isSample={state.isSample} onFile={onFile} questionClosed={questionClosed} onQuestionClosed={onQuestionClosed} />
   }
 }
 
 export default function App() {
   const { state, loadFile, loadSample, reset } = useLoader()
   const isPrivacy = usePrivacyRoute()
+  const [questionClosed, setQuestionClosed] = useState(false)
   const showSampleBanner = state.phase === 'ready' && state.isSample
   const banner = showSampleBanner ? <SampleBanner onUseOwn={reset} /> : undefined
-  const screen = screenFor(state, { onFile: loadFile, onSample: loadSample, onCancel: reset })
+  const screen = screenFor(state, { onFile: loadFile, onSample: loadSample, onCancel: reset, questionClosed, onQuestionClosed: () => setQuestionClosed(true) })
 
   // the screen stays mounted under Privacy so the period and checkbox survive the round trip
   return (

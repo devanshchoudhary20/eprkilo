@@ -21,7 +21,7 @@ function saveFile(name: string, text: string) {
   document.body.append(link)
   link.click()
   link.remove()
-  URL.revokeObjectURL(url)
+  setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
 export function ExportBar({ table, from, to, isSample, questionClosed, onQuestionClosed }: Props) {
@@ -30,7 +30,7 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
   const [sent, setSent] = useState(false)
   const fallback = useRef<HTMLTextAreaElement>(null)
   const fileName = exportFileName(from, to, isSample)
-  const tsv = toTsv(table)
+  const fallbackRows = Math.min(table.rows.length + 1, 8)
   const exported = status.kind === 'saved' || status.kind === 'copied'
   const showQuestion = exported && !isSample && !questionClosed
   const canSend = answer.trim().length > 0
@@ -41,11 +41,12 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
   }
 
   const copy = async () => {
+    const text = toTsv(table)
     try {
-      await navigator.clipboard.writeText(tsv)
+      await navigator.clipboard.writeText(text)
       setStatus({ kind: 'copied', rows: table.rows.length })
     } catch {
-      setStatus({ kind: 'blocked', text: tsv })
+      setStatus({ kind: 'blocked', text })
       requestAnimationFrame(() => fallback.current?.select())
     }
   }
@@ -69,7 +70,7 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
           <p className="alert" role="alert">Your browser blocked copying. Select the text below and copy it yourself, or use Download CSV.</p>
           <label className="field">
             Rows, tab-separated (selected)
-            <textarea ref={fallback} className="mono export-text" readOnly rows={Math.min(table.rows.length + 1, 8)} value={status.text} wrap="off" />
+            <textarea ref={fallback} className="mono export-text" readOnly rows={fallbackRows} value={status.text} wrap="off" />
           </label>
         </div>
       )}

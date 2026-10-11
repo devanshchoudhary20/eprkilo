@@ -8,7 +8,8 @@ export type SalesColumn = { key: string; label: string }
 export type NoticePart = { text: string; sep: string; action?: 'count-unshipped' }
 export type Notice = { leftOut: NoticePart[]; inTotal: NoticePart[]; guessed: NoticePart[] }
 
-export const rows = (count: number) => `${count.toLocaleString('en-US')} ${count === 1 ? 'row' : 'rows'}`
+export const plural = (count: number, word: string) => `${count.toLocaleString('en-US')} ${word}${count === 1 ? '' : 's'}`
+export const rows = (count: number) => plural(count, 'row')
 
 export function salesColumns(share: ShareResult): SalesColumn[] {
   if (!share.hasSales) return [{ key: 'none', label: 'Item sales' }]

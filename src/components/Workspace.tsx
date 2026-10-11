@@ -9,14 +9,13 @@ import { SetupsScreen } from './SetupsScreen'
 import { ShareView } from './ShareView'
 
 type Step = 'share' | 'setups' | 'mapping' | 'results'
-type Props = { fileName: string; file: ItemsFile; isSample: boolean; onFile: (file: File) => void }
+type Props = { fileName: string; file: ItemsFile; isSample: boolean; onFile: (file: File) => void; questionClosed: boolean; onQuestionClosed: () => void }
 
-export function Workspace({ fileName, file, isSample, onFile }: Props) {
+export function Workspace({ fileName, file, isSample, onFile, questionClosed, onQuestionClosed }: Props) {
   const [step, setStep] = useState<Step>('share')
   const period = usePeriodState(file)
   const { store, unreadable, saveSetup, deleteSetup, setMapping, resetMapping } = useSetupStore()
 
-  const [questionClosed, setQuestionClosed] = useState(false)
   const calculated = useRef(false)
   const onCalculated = useCallback(() => {
     if (calculated.current) return
@@ -51,7 +50,7 @@ export function Workspace({ fileName, file, isSample, onFile }: Props) {
           onPeriod={go('share')}
           onCalculated={onCalculated}
           questionClosed={questionClosed}
-          onQuestionClosed={() => setQuestionClosed(true)}
+          onQuestionClosed={onQuestionClosed}
         />
       )}
       {step !== 'share' && (

@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react'
 import {
   ARITHMETIC_LINE,
-  CITEO_THRESHOLD_UNITS,
-  FRANCE_LARGE,
-  FRANCE_SMALL,
+  citeoQuote,
   FRANCE_URL,
   GERMANY_FIELDS,
   GERMANY_QUOTES,
@@ -15,10 +13,12 @@ import {
 } from '../lib/registerNotes'
 import type { Quote } from '../lib/registerNotes'
 import type { Shipped } from '../lib/export'
+import { plural } from '../lib/shareView'
 
 type Props = { germany: Shipped; france: Shipped; spain: Shipped }
 
-const count = (value: number, word: string) => `${value.toLocaleString('en-US')} ${word}${value === 1 ? '' : 's'}`
+const shippedLine = (title: string, shipped: Shipped) =>
+  `Shipped to ${title}: ${plural(shipped.orders, 'order')}, ${plural(shipped.units, 'unit')}. Your item sales there: ${shipped.sales}.`
 
 function Quoted({ quote }: { quote: Quote }) {
   return (
@@ -53,10 +53,11 @@ function FieldTable({ left, right, rows }: { left: string; right: string; rows: 
 }
 
 function Note({ title, shipped, source, children }: { title: string; shipped: Shipped; source: ReactNode; children: ReactNode }) {
+  const line = shippedLine(title, shipped)
   return (
     <section className="slip note" aria-label={`${title} register note`}>
       <h3>{title}</h3>
-      <p className="note-ship">{`Shipped to ${title}: ${count(shipped.orders, 'order')}, ${count(shipped.units, 'unit')}. Your item sales there: ${shipped.sales}.`}</p>
+      <p className="note-ship">{line}</p>
       {children}
       <p className="muted note-arith">{ARITHMETIC_LINE}</p>
       <p className="mono small note-source">{source}</p>
@@ -65,7 +66,7 @@ function Note({ title, shipped, source, children }: { title: string; shipped: Sh
 }
 
 export function RegisterNotes({ germany, france, spain }: Props) {
-  const franceQuote = france.units < CITEO_THRESHOLD_UNITS ? FRANCE_SMALL : FRANCE_LARGE
+  const franceQuote = citeoQuote(france.units)
   const retrieved = `, retrieved ${RETRIEVED}.`
   return (
     <section className="notes" aria-labelledby="notes-title">

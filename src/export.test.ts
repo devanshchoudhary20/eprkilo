@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { computeShare } from './lib/compute'
 import { buildExport, exportFileName, toCsv, toTsv } from './lib/export'
-import { computeKg } from './lib/kg'
+import { computeKg, kgText, rowTotalMg } from './lib/kg'
+import { citeoQuote } from './lib/registerNotes'
 import { parseCsvString } from './lib/parse'
 import { sendSwitchAnswer } from './lib/switchAnswer'
 import { track } from './lib/track'
@@ -71,5 +72,24 @@ describe('switch answer', () => {
   it('sends nothing for an empty answer', () => {
     expect(sendSwitchAnswer('   ')).toBe(false)
     expect(track).not.toHaveBeenCalled()
+  })
+})
+
+describe('non-EU kilograms and the Citeo line', () => {
+  const head = 'Transaction ID,Listing ID,Quantity,Ship Country,Order ID,Item Total,Currency,Date Shipped,Sale Date,Item Name'
+  const mixed = parseCsvString(`${head}\n1,L1,2,Germany,A1,$10.00,USD,3/1/26,3/1/26,Card\n2,L1,3,United States,A2,$10.00,USD,3/1/26,3/1/26,Card\n`)
+  if (mixed.kind !== 'items') throw new Error('expected items')
+
+  it('puts a non-EU order in outside and not in the EU total', () => {
+    const kg = computeKg(mixed.file, period, false, store)
+    expect(kg.outside.parcels).toBe(1)
+    expect(kgText(rowTotalMg(kg.outside))).toBe('0.060')
+    expect(kgText(rowTotalMg(kg.total))).toBe('0.042')
+    expect(buildExport(computeShare(mixed.file, period, false), kg).rows.at(-1)?.at(-1)).toBe('0.060')
+  })
+
+  it('switches from the forfait sentence to the UVC heading at 10,000 units', () => {
+    expect(citeoQuote(9_999).text).toContain('vous payez le forfait de 110 €')
+    expect(citeoQuote(10_000).text).toContain('ENTRE 10 000 et 500 000 UVC')
   })
 })

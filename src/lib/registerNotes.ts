@@ -60,3 +60,5 @@ export const SPAIN_QUOTES: Quote[] = [
     translation: 'When the quantity placed on the market is small (under 15 t), the only thing to keep in mind is that you will have to make a simplified declaration instead of the usual one, but you must register and meet the corresponding annual reporting obligations.',
   },
 ]
+
+export const citeoQuote = (units: number): Quote => (units < CITEO_THRESHOLD_UNITS ? FRANCE_SMALL : FRANCE_LARGE)

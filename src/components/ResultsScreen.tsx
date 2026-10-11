@@ -6,6 +6,7 @@ import { computeShare } from '../lib/compute'
 import type { Period } from '../lib/compute'
 import type { ItemsFile } from '../lib/parse'
 import type { SetupStore } from '../lib/setups'
+import { plural } from '../lib/shareView'
 import { ExportBar } from './ExportBar'
 import { KgTable } from './KgTable'
 import { RegisterNotes } from './RegisterNotes'
@@ -23,13 +24,13 @@ type Props = {
   onQuestionClosed: () => void
 }
 
-const plural = (count: number, word: string) => `${count.toLocaleString('en-US')} ${word}${count === 1 ? '' : 's'}`
 
 export function ResultsScreen({ file, isSample, period, countUnshipped, store, onSetups, onPeriod, onCalculated, questionClosed, onQuestionClosed }: Props) {
   const [showEmpty, setShowEmpty] = useState(false)
   const result = useMemo(() => computeKg(file, period, countUnshipped, store), [file, period, countUnshipped, store])
   const share = useMemo(() => computeShare(file, period, countUnshipped), [file, period, countUnshipped])
   const table = useMemo(() => buildExport(share, result), [share, result])
+  const notes = { germany: shippedTo(share, 'DE'), france: shippedTo(share, 'FR'), spain: shippedTo(share, 'ES') }
   const { visible, hidden } = columnsFor(result, showEmpty)
   const title = `Packaging in kilograms, ${formatDate(period.from)} to ${formatDate(period.to)}`
   const hasSetups = store.setups.length > 0
@@ -106,7 +107,7 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
       <div className="screen-actions">
         <button type="button" className="link-btn" onClick={onSetups}>Edit packaging setups</button>
       </div>
-      <RegisterNotes germany={shippedTo(share, 'DE')} france={shippedTo(share, 'FR')} spain={shippedTo(share, 'ES')} />
+      <RegisterNotes {...notes} />
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { listListings } from '../lib/kg'
 import type { ItemsFile } from '../lib/parse'
 import type { SetupStore } from '../lib/setups'
+import { plural } from '../lib/shareView'
 
 type Props = {
   file: ItemsFile
@@ -13,7 +14,6 @@ type Props = {
 }
 
 const BY_NOTE = { id: '', sku: 'matched by SKU', name: 'matched by item name' } as const
-const plural = (count: number, word: string) => `${count.toLocaleString('en-US')} ${word}${count === 1 ? '' : 's'}`
 
 export function MappingScreen({ file, store, onSet, onReset, onSetups, onResults }: Props) {
   const { listings, noKeyRows } = useMemo(() => listListings(file), [file])

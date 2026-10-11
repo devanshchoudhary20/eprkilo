@@ -10,6 +10,7 @@ export type KgRow = { iso: string; name: string; parcels: number; units: number;
 export type KgResult = {
   countries: KgRow[]
   total: KgRow
+  outside: KgRow
   usedSetups: Array<{ name: string; isDefault: boolean }>
   defaultListings: number
   quantityAssumed: number
@@ -19,7 +20,7 @@ export type KgResult = {
 
 export type Listing = { key: string; listingId: string; name: string; units: number; by: 'id' | 'sku' | 'name' }
 
-const zeros = (): MilliByMaterial => Object.fromEntries(MATERIAL_KEYS.map((key) => [key, 0])) as MilliByMaterial
+export const zeros = (): MilliByMaterial => Object.fromEntries(MATERIAL_KEYS.map((key) => [key, 0])) as MilliByMaterial
 
 export function listingKey(row: ItemRow): { key: string; by: Listing['by'] } | null {
   if (row.listingId) return { key: `id:${row.listingId}`, by: 'id' }
@@ -69,27 +70,29 @@ export function computeKg(file: ItemsFile, period: Period, countUnshipped: boole
     return chosen ? { setup: chosen, isDefault: false } : { setup: fallback, isDefault: true }
   }
 
+  const inPeriod = rowsInPeriod(file, period, countUnshipped)
+  const eu = inPeriod.filter((row) => classifyCountry(row.shipCountry).kind === 'eu')
   const orders = new Map<string, ItemRow[]>()
-  const eu = rowsInPeriod(file, period, countUnshipped).filter((row) => classifyCountry(row.shipCountry).kind === 'eu')
-  eu.forEach((row) => orders.set(row.orderId, [...(orders.get(row.orderId) ?? []), row]))
+  inPeriod.forEach((row) => orders.set(row.orderId, [...(orders.get(row.orderId) ?? []), row]))
 
   const countries = new Map<string, KgRow>()
+  const outside: KgRow = { iso: 'non-eu', name: 'non-EU', parcels: 0, units: 0, mg: zeros() }
   const used = new Set<string>()
   const defaultKeys = new Set<string>()
   orders.forEach((items) => {
     const place = classifyCountry(items[0].shipCountry)
-    if (place.kind !== 'eu') return
-    const entry = countries.get(place.iso) ?? { iso: place.iso, name: place.name, parcels: 0, units: 0, mg: zeros() }
+    const isEu = place.kind === 'eu'
+    const entry = isEu ? (countries.get(place.iso) ?? { iso: place.iso, name: place.name, parcels: 0, units: 0, mg: zeros() }) : outside
     entry.parcels += 1
     const parcelParts: MilliByMaterial[] = []
     items.forEach((row) => {
       const { setup, isDefault } = setupFor(row)
       const key = listingKey(row)?.key
       entry.units += row.quantity
-      if (isDefault && key) defaultKeys.add(key)
+      if (isEu && isDefault && key) defaultKeys.add(key)
       const part = setup && parts.get(setup.id)
       if (!setup || !part) return
-      used.add(setup.id)
+      if (isEu) used.add(setup.id)
       MATERIAL_KEYS.forEach((material) => {
         entry.mg[material] += part.unit[material] * row.quantity
       })
@@ -97,7 +100,7 @@ export function computeKg(file: ItemsFile, period: Period, countUnshipped: boole
     })
     const biggest = parcelParts.reduce<MilliByMaterial | null>((best, part) => (!best || sum(part) > sum(best) ? part : best), null)
     if (biggest) MATERIAL_KEYS.forEach((material) => (entry.mg[material] += biggest[material]))
-    countries.set(place.iso, entry)
+    if (isEu) countries.set(place.iso, entry)
   })
 
   const rows = [...countries.values()].sort((a, b) => b.parcels - a.parcels || a.name.localeCompare(b.name))
@@ -110,6 +113,7 @@ export function computeKg(file: ItemsFile, period: Period, countUnshipped: boole
   return {
     countries: rows,
     total,
+    outside,
     usedSetups: store.setups.filter((setup) => used.has(setup.id)).map((setup) => ({ name: setup.name, isDefault: setup.id === store.defaultId })),
     defaultListings: defaultKeys.size,
     quantityAssumed: eu.filter((row) => row.quantityAssumed).length,

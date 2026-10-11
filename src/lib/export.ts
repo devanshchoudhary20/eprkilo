@@ -1,7 +1,6 @@
-import { FLAGGED_ISOS } from './countries'
 import type { ShareResult, Totals } from './compute'
-import { kgText, rowTotalMg } from './kg'
-import type { KgResult } from './kg'
+import { kgText, rowTotalMg, zeros } from './kg'
+import type { KgResult, KgRow } from './kg'
 import { formatMoney, moneyFixed } from './money'
 import { UNKNOWN_CURRENCY } from './parse'
 import { MATERIAL_KEYS } from './setups'
@@ -22,7 +21,6 @@ const KG_COLUMN: Record<MaterialKey, string> = {
 
 const integer = (count: number) => String(Math.round(count))
 const currencyColumn = (currency: string) => `item_sales_${currency === UNKNOWN_CURRENCY ? 'unknown' : currency}`
-const emptyMg = () => MATERIAL_KEYS.map(() => kgText(0))
 
 function sumTotals(parts: Totals[]): Totals {
   const sales: Record<string, number> = {}
@@ -42,23 +40,23 @@ export function buildExport(share: ShareResult, kg: KgResult): ExportTable {
     ...MATERIAL_KEYS.map((key) => KG_COLUMN[key]),
     'total_kg',
   ]
-  const line = (country: string, iso: string, totals: Totals, flagged: boolean, kgCells: string[], total: string) => [
-    country,
-    iso,
-    integer(totals.orders),
-    integer(totals.units),
-    ...currencies.map((currency) => moneyFixed(totals.sales[currency] ?? 0)),
-    flagged ? 'yes' : 'no',
-    ...kgCells,
-    total,
-  ]
-  const euRows = kg.countries.map((row) => {
-    const totals = share.euCountries.find((entry) => entry.iso === row.iso) ?? { orders: row.parcels, units: row.units, sales: {} }
-    return line(row.name, row.iso, totals, FLAGGED_ISOS.has(row.iso), MATERIAL_KEYS.map((key) => kgText(row.mg[key])), kgText(rowTotalMg(row)))
-  })
-  // Packaging kilograms are only computed for EU destinations, so this row carries zeros.
+  const line = (country: string, iso: string, totals: Totals, flagged: boolean, kgRow: KgRow | undefined) => {
+    const mg = kgRow?.mg ?? zeros()
+    return [
+      country,
+      iso,
+      integer(totals.orders),
+      integer(totals.units),
+      ...currencies.map((currency) => moneyFixed(totals.sales[currency] ?? 0)),
+      flagged ? 'yes' : 'no',
+      ...MATERIAL_KEYS.map((key) => kgText(mg[key])),
+      kgText(kgRow ? rowTotalMg(kgRow) : 0),
+    ]
+  }
+  const kgByIso = new Map(kg.countries.map((row) => [row.iso, row]))
+  const euRows = share.euCountries.map((country) => line(country.name, country.iso, country, country.flagged, kgByIso.get(country.iso)))
   const outside = sumTotals([share.outside, share.unrecognised, share.noDestination])
-  return { header, rows: [...euRows, line('non-EU', '-', outside, false, emptyMg(), kgText(0))] }
+  return { header, rows: [...euRows, line('non-EU', '-', outside, false, kg.outside)] }
 }
 
 const csvField = (value: string) => (/[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value)
