@@ -171,3 +171,22 @@ describe('defaultPeriod', () => {
     expect(defaultPeriod(items(csv))).toEqual({ from: '2026-01-01', to: '2026-12-31' })
   })
 })
+
+describe('real export formats', () => {
+  it('reads Date Posted as the ship date and counts every row without ticking the box', () => {
+    const file = items(fixture('items-date-posted.csv'))
+    const share = computeShare(file, defaultPeriod(file), false)
+    expect(share.includedRows).toBe(3)
+    expect(share.notShipped).toBe(0)
+  })
+
+  it('pins a real 2025 Etsy export: detected, every row read, clean countries and dates, known total', () => {
+    const file = items(fixture('items-real-2025.csv'))
+    const share = computeShare(file, defaultPeriod(file), false)
+    expect(file.rowCount).toBe(3)
+    expect(file.rows.filter((row) => row.shipDateBad)).toHaveLength(0)
+    expect(share.unrecognisedRows).toBe(0)
+    expect(share.includedRows).toBe(3)
+    expect(file.rows.reduce((sum, row) => sum + row.cents, 0)).toBe(21487)
+  })
+})

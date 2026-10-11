@@ -57,12 +57,12 @@ export function parseCsvText(text: string): { fields: string[]; records: Rec[] }
   return { fields: result.meta.fields ?? [], records: result.data }
 }
 
-function toRow(index: number, get: (name: string) => string, hasSales: boolean): ItemRow {
+function toRow(index: number, get: (name: string) => string, hasSales: boolean, shipHeader: string): ItemRow {
   const quantityText = get('quantity')
   const quantity = /^\d+$/.test(quantityText) ? Number(quantityText) : 0
   const quantityAssumed = quantity < 1
   const cents = hasSales ? parseMoney(get('item total')) : 0
-  const shipText = get('date shipped')
+  const shipText = get(shipHeader)
   const shipDate = parseEtsyDate(shipText)
   const orderId = get('order id').replace(/^#/, '').trim() || get('transaction id') || `row-${index}`
   return {
@@ -85,16 +85,18 @@ function toRow(index: number, get: (name: string) => string, hasSales: boolean):
 export function interpretCsv(fields: string[], records: Rec[]): ParseOutcome {
   const keys = new Map(fields.map((field) => [headerKey(field), field]))
   const has = (name: string) => keys.has(name.toLowerCase())
+  // some exports title the ship date column Date Posted; Date Shipped wins when both exist
+  const shipHeader = has('Date Shipped') || !has('Date Posted') ? 'date shipped' : 'date posted'
   const isItems = has('Transaction ID') && has('Listing ID')
   if (!isItems && has('Number of Items')) return { kind: 'orders' }
   if (!isItems) {
-    const missing = NEEDED_HEADERS.filter((name) => !has(name))
+    const missing = NEEDED_HEADERS.filter((name) => !has(name) && !(name === 'Date Shipped' && has('Date Posted')))
     return { kind: 'not-etsy', found: fields.filter(Boolean), missing: [...missing] }
   }
   if (records.length === 0) return { kind: 'empty' }
   const hasSales = has('Item Total') && has('Currency')
   const get = (record: Rec) => (name: string) => (record[keys.get(name) ?? ''] ?? '').trim()
-  const rows = records.map((record, index) => toRow(index, get(record), hasSales))
+  const rows = records.map((record, index) => toRow(index, get(record), hasSales, shipHeader))
   return { kind: 'items', file: { rows, rowCount: rows.length, hasSales } }
 }
 
