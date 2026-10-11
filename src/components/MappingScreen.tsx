@@ -3,6 +3,7 @@ import { listListings } from '../lib/kg'
 import type { ItemsFile } from '../lib/parse'
 import type { SetupStore } from '../lib/setups'
 import { plural } from '../lib/shareView'
+import { Scroll } from './Scroll'
 
 type Props = {
   file: ItemsFile
@@ -31,7 +32,7 @@ export function MappingScreen({ file, store, onSet, onReset, onSetups, onResults
   })
   const movedCount = rows.filter((row) => row.note.startsWith('Was ')).length
   const usingDefault = rows.filter((row) => row.value === store.defaultId).length
-  const noIdNote = noKeyRows > 0 ? ` ${plural(noKeyRows, 'row')} had no Listing ID, SKU or item name and use the default.` : ''
+  const noIdNote = noKeyRows > 0 ? ` ${plural(noKeyRows, 'row')} had no Listing ID, SKU or item name and ${noKeyRows === 1 ? 'uses' : 'use'} the default.` : ''
   const movedNote = movedCount > 0 ? ` ${plural(movedCount, 'listing')} moved to your default because ${movedCount === 1 ? 'its' : 'their'} setup was deleted.` : ''
   const sub = `${plural(rows.length, 'listing')} in your file. ${usingDefault.toLocaleString('en-US')} use '${defaultName}'.${noIdNote}${movedNote}`
   const confirmText = `All ${rows.length.toLocaleString('en-US')} listings use '${defaultName}'.`
@@ -69,7 +70,7 @@ export function MappingScreen({ file, store, onSet, onReset, onSetups, onResults
       </header>
       {confirmed && <p className="saved-note" role="status">{confirmText}</p>}
       <section className="slip table-card" aria-label="Listings">
-        <div className="scroll map-scroll">
+        <Scroll className="scroll map-scroll" label="Listings table">
           <table className="num map-table">
             <thead>
               <tr>
@@ -99,7 +100,7 @@ export function MappingScreen({ file, store, onSet, onReset, onSetups, onResults
               ))}
             </tbody>
           </table>
-        </div>
+        </Scroll>
       </section>
       <div className="screen-actions">
         <button type="button" className="btn btn-primary" onClick={onResults}>See kilograms</button>

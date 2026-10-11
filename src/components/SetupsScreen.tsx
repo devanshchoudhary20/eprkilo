@@ -83,6 +83,7 @@ export function SetupsScreen({ store, unreadable, onSave, onDelete, onMapping, o
           key={shown.id}
           initial={shown}
           isSaved={!isFresh && Boolean(saved)}
+          current={isFresh ? undefined : saved}
           isDefault={!isFresh && saved?.id === store.defaultId}
           hasOthers={isFresh ? !isEmpty : store.setups.length > 1}
           onSave={handleSave}

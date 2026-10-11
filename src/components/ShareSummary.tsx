@@ -1,6 +1,7 @@
 import { ordersShare } from '../lib/compute'
 import type { ShareResult } from '../lib/compute'
 import { formatDate } from '../lib/dates'
+import { Scroll } from './Scroll'
 import { salesCell, salesColumns, shareCell } from '../lib/shareView'
 
 type Props = { share: ShareResult; countUnshipped: boolean; pending: boolean }
@@ -21,11 +22,11 @@ export function ShareSummary({ share, countUnshipped, pending }: Props) {
     <div className="anchor-row">
       <div>
         <p className={figureClass} aria-live="polite">{figure}</p>
-        <h2 className="anchor-title">of your orders went to the EU</h2>
+        <h1 className="anchor-title">of your orders went to the EU</h1>
         <p className="anchor-sub">{pending ? 'Counting...' : sub}</p>
       </div>
       <section className={receiptClass} aria-label="Shop total and EU share">
-        <div className="scroll">
+        <Scroll label="Shop total and EU share table">
           <table className="num">
             <thead>
               <tr>
@@ -60,7 +61,7 @@ export function ShareSummary({ share, countUnshipped, pending }: Props) {
               </tr>
             </tbody>
           </table>
-        </div>
+        </Scroll>
         <p className="receipt-note">Item sales are before discounts, shipping and tax. Currencies are never added together or converted.</p>
       </section>
     </div>

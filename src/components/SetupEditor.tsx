@@ -1,21 +1,23 @@
 import { useState } from 'react'
-import { blankComponent, checkDraft } from '../lib/setups'
+import { NAME_LIMIT, blankComponent, checkDraft } from '../lib/setups'
 import type { ComponentDraft, Setup, SetupDraft } from '../lib/setups'
 import { ComponentRow } from './ComponentRow'
 
 type Props = {
   initial: SetupDraft
   isSaved: boolean
+  current: Setup | undefined
   isDefault: boolean
   hasOthers: boolean
   onSave: (setup: Setup, makeDefault: boolean) => void
   onDelete: (id: string) => void
 }
 
-export function SetupEditor({ initial, isSaved, isDefault, hasOthers, onSave, onDelete }: Props) {
+export function SetupEditor({ initial, isSaved, current, isDefault, hasOthers, onSave, onDelete }: Props) {
   const [draft, setDraft] = useState(initial)
   const [wantDefault, setWantDefault] = useState(false)
   const [attempted, setAttempted] = useState(false)
+  const [baseline, setBaseline] = useState(() => JSON.stringify(current))
   const [message, setMessage] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const check = checkDraft(draft)
@@ -25,6 +27,7 @@ export function SetupEditor({ initial, isSaved, isDefault, hasOthers, onSave, on
   const shownErrors = attempted ? check.gramsErrors : {}
   const summary = attempted && check.errorCount > 0 ? `Fix ${check.errorCount} ${check.errorCount === 1 ? 'field' : 'fields'} to save.` : null
   const nameClass = nameError ? 'field invalid' : 'field'
+  const changedElsewhere = isSaved && JSON.stringify(current) !== baseline
   const switchHelp = isDefault && hasOthers ? 'To change the default, switch it on for another setup.' : null
 
   const update = (key: string, next: ComponentDraft) =>
@@ -41,6 +44,7 @@ export function SetupEditor({ initial, isSaved, isDefault, hasOthers, onSave, on
       return
     }
     onSave(check.setup, switchOn)
+    setBaseline(JSON.stringify(check.setup))
     setMessage(switchOn ? `Saved. '${check.setup.name}' is your default setup.` : `Saved. '${check.setup.name}' is saved.`)
   }
 
@@ -55,10 +59,11 @@ export function SetupEditor({ initial, isSaved, isDefault, hasOthers, onSave, on
   return (
     <section className="slip editor" aria-label="Setup editor">
       {message && <p className="saved-note" role="status">{message}</p>}
+      {changedElsewhere && <p className="notice-line" role="status">This setup was changed in another tab. Saving here replaces that change.</p>}
       <div className="editor-head">
         <label className={nameClass}>
           Setup name
-          <input type="text" value={draft.name} placeholder="Card in mailer" aria-invalid={Boolean(nameError)} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+          <input type="text" value={draft.name} maxLength={NAME_LIMIT} placeholder="Card in mailer" aria-invalid={Boolean(nameError)} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
           {nameError && <span className="field-error" role="alert">{nameError}</span>}
         </label>
         <div className="switch-wrap">

@@ -1,18 +1,20 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef } from 'react'
 import { usePeriodState } from '../hooks/usePeriodState'
+import { useStep } from '../hooks/useStep'
 import { useSetupStore } from '../hooks/useSetupStore'
 import type { ItemsFile } from '../lib/parse'
+import { goTo } from '../lib/route'
+import type { Step } from '../lib/route'
 import { track } from '../lib/track'
 import { MappingScreen } from './MappingScreen'
 import { ResultsScreen } from './ResultsScreen'
 import { SetupsScreen } from './SetupsScreen'
 import { ShareView } from './ShareView'
 
-type Step = 'share' | 'setups' | 'mapping' | 'results'
 type Props = { fileName: string; file: ItemsFile; isSample: boolean; onFile: (file: File) => void; questionClosed: boolean; onQuestionClosed: () => void }
 
 export function Workspace({ fileName, file, isSample, onFile, questionClosed, onQuestionClosed }: Props) {
-  const [step, setStep] = useState<Step>('share')
+  const step = useStep()
   const period = usePeriodState(file)
   const { store, unreadable, saveSetup, deleteSetup, setMapping, resetMapping } = useSetupStore()
 
@@ -24,7 +26,7 @@ export function Workspace({ fileName, file, isSample, onFile, questionClosed, on
   }, [])
 
   const go = (next: Step) => () => {
-    setStep(next)
+    goTo(next)
     window.scrollTo({ top: 0 })
   }
 

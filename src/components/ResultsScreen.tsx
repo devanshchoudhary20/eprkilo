@@ -5,6 +5,7 @@ import { columnsFor, computeKg } from '../lib/kg'
 import { computeShare } from '../lib/compute'
 import type { Period } from '../lib/compute'
 import type { ItemsFile } from '../lib/parse'
+import { hasNoWeight } from '../lib/setups'
 import type { SetupStore } from '../lib/setups'
 import { plural } from '../lib/shareView'
 import { ExportBar } from './ExportBar'
@@ -37,8 +38,11 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
   const hasRows = result.countries.length > 0
   const used = result.usedSetups.map((setup) => (setup.isDefault ? `${setup.name} (default)` : setup.name)).join(', ')
   const usedText = used || 'none'
-  const weightless = store.setups.find((setup) => setup.components.every((part) => !(part.grams > 0)) && result.usedSetups.some((used) => used.name === setup.name))
-  const weightlessName = weightless?.name ?? result.usedSetups[0]?.name ?? 'A setup'
+  const weightless = store.setups.filter((setup) => hasNoWeight(setup) && result.usedSetups.some((item) => item.id === setup.id))
+  const weightlessName = weightless[0]?.name ?? result.usedSetups[0]?.name ?? 'A setup'
+  const one = weightless.length === 1
+  const quoted = weightless.map((setup) => `'${setup.name}'`).join(', ')
+  const partialWarning = weightless.length > 0 ? `${quoted} ${one ? 'has' : 'have'} no weight yet, so ${one ? 'its' : 'their'} listings add 0.000 kg. Fix ${one ? 'it' : 'them'} in packaging setups.` : null
   const strip = [
     `Setups used: ${usedText}.`,
     `${plural(result.defaultListings, 'listing')} use the default.`,
@@ -73,6 +77,7 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
           <p className="muted">No orders to an EU country in this period, so there is nothing to weigh.</p>
           <button type="button" className="link-btn" onClick={onPeriod}>Change the period</button>
         </section>
+        <ExportBar table={table} from={period.from} to={period.to} isSample={isSample} questionClosed={questionClosed} onQuestionClosed={onQuestionClosed} />
       </div>
     )
   }
@@ -93,6 +98,7 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
     <div className="screen">
       <header className="screen-head"><h1>{title}</h1></header>
       <p className="strip-note" role="status">{strip}</p>
+      {partialWarning && <p className="notice-line alert-line" role="alert">{partialWarning}</p>}
       <section className="slip table-card" aria-label="Kilograms by country">
         <KgTable result={result} columns={visible} />
         {showToggle && (

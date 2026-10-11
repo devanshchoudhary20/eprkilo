@@ -1,4 +1,5 @@
 import type { ShareResult, Totals } from '../lib/compute'
+import { Scroll } from './Scroll'
 import { salesCell, salesColumns } from '../lib/shareView'
 import type { SalesColumn } from '../lib/shareView'
 
@@ -55,7 +56,7 @@ export function CountryTable({ share, pending }: { share: ShareResult; pending: 
       {pending ? (
         <PendingRows />
       ) : (
-        <div className="scroll">
+        <Scroll label="Orders by country table">
           <table className="num">
             <thead>
               <tr>
@@ -78,7 +79,7 @@ export function CountryTable({ share, pending }: { share: ShareResult; pending: 
             </tbody>
           </table>
           {!hasEu && <p className="muted">No orders to an EU country in this period.</p>}
-        </div>
+        </Scroll>
       )}
       <p className="receipt-note">
         Flagged countries are the ones where Etsy asks sellers for an EPR registration number in Shop Manager. This page does not say whether you must register.

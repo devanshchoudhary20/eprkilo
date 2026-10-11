@@ -24,7 +24,9 @@ export type SetupDraft = { id: string; name: string; components: ComponentDraft[
 
 export const emptyStore = (): SetupStore => ({ setups: [], defaultId: null, mapping: {}, removed: {} })
 
-const STORAGE_KEY = 'eprkilo-setups-v1'
+export const NAME_LIMIT = 60
+export const GRAMS_LIMIT = 20
+export const STORAGE_KEY = 'eprkilo-setups-v1'
 const isMaterial = (value: unknown): value is MaterialKey => MATERIAL_KEYS.includes(value as MaterialKey)
 
 export function validateGrams(raw: string): { grams: number } | { error: string } {
@@ -35,6 +37,8 @@ export function validateGrams(raw: string): { grams: number } | { error: string 
   if (grams <= 0) return { error: 'Grams must be more than 0.' }
   return { grams }
 }
+
+export const hasNoWeight = (setup: Setup) => setup.components.every((part) => !(part.grams > 0))
 
 export function validateName(name: string): string | null {
   return name.trim() === '' ? "Give this setup a name, for example 'Card in mailer'." : null
@@ -48,18 +52,20 @@ function sanitizeSetup(raw: unknown): Setup | null {
       ? [{ material: item.material, grams: item.grams, counts: item.counts === 'parcel' ? ('parcel' as const) : ('unit' as const) }]
       : [],
   )
-  return { id: candidate.id, name: candidate.name.trim() || 'Untitled setup', components }
+  return { id: candidate.id, name: candidate.name.trim().slice(0, NAME_LIMIT) || 'Untitled setup', components }
 }
 
-const stringMap = (raw: unknown): Record<string, string> =>
-  Object.fromEntries(Object.entries(typeof raw === 'object' && raw ? raw : {}).filter(([, value]) => typeof value === 'string')) as Record<string, string>
+const stringMap = (raw: unknown, limit = Infinity): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(typeof raw === 'object' && raw ? raw : {}).flatMap(([key, value]) => (typeof value === 'string' ? [[key, value.slice(0, limit)]] : [])),
+  )
 
 export function parseStore(text: string): SetupStore {
   const data = (JSON.parse(text) ?? {}) as { setups?: unknown; defaultId?: unknown; mapping?: unknown; removed?: unknown }
   const setups = (Array.isArray(data.setups) ? data.setups : []).flatMap((item) => sanitizeSetup(item) ?? [])
   const wanted = typeof data.defaultId === 'string' ? data.defaultId : null
   const defaultId = setups.find((setup) => setup.id === wanted)?.id ?? setups[0]?.id ?? null
-  return { setups, defaultId, mapping: stringMap(data.mapping), removed: stringMap(data.removed) }
+  return { setups, defaultId, mapping: stringMap(data.mapping), removed: stringMap(data.removed, NAME_LIMIT) }
 }
 
 export function loadStore(): { store: SetupStore; unreadable: boolean } {
@@ -109,7 +115,7 @@ export function checkDraft(draft: SetupDraft): DraftCheck {
     else components.push({ material: item.material, grams: result.grams, counts: item.counts })
   })
   const errorCount = Object.keys(gramsErrors).length + (nameError ? 1 : 0)
-  const setup = errorCount === 0 ? { id: draft.id, name: draft.name.trim(), components } : null
+  const setup = errorCount === 0 ? { id: draft.id, name: draft.name.trim().slice(0, NAME_LIMIT), components } : null
   return { nameError, gramsErrors, setup, errorCount }
 }
 

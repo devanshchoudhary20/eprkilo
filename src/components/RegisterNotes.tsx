@@ -14,6 +14,8 @@ import {
 import type { Quote } from '../lib/registerNotes'
 import type { Shipped } from '../lib/export'
 import { plural } from '../lib/shareView'
+import { ExternalLink } from './ExternalLink'
+import { Scroll } from './Scroll'
 
 type Props = { germany: Shipped; france: Shipped; spain: Shipped }
 
@@ -31,7 +33,7 @@ function Quoted({ quote }: { quote: Quote }) {
 
 function FieldTable({ left, right, rows }: { left: string; right: string; rows: Array<[string, string]> }) {
   return (
-    <div className="scroll">
+    <Scroll label={`${right} mapping table`}>
       <table className="note-table">
         <thead>
           <tr>
@@ -48,7 +50,7 @@ function FieldTable({ left, right, rows }: { left: string; right: string; rows: 
           ))}
         </tbody>
       </table>
-    </div>
+    </Scroll>
   )
 }
 
@@ -74,17 +76,17 @@ export function RegisterNotes({ germany, france, spain }: Props) {
       <p className="muted">
         {`Quoted sentences are copied from the sources named under each note, retrieved ${RETRIEVED}. The words outside the quotation marks are eprkilo's.`}
       </p>
-      <Note title="Germany" shipped={germany} source={<>Source: <a href={GERMANY_URL}>{GERMANY_URL}</a>{retrieved}</>}>
+      <Note title="Germany" shipped={germany} source={<>Source: <ExternalLink href={GERMANY_URL} />{retrieved}</>}>
         <p>LUCID has eight material fields. Your materials go in like this:</p>
         <FieldTable left="Your material" right="LUCID field" rows={GERMANY_FIELDS} />
         {GERMANY_QUOTES.map((quote) => (
           <Quoted key={quote.text} quote={quote} />
         ))}
       </Note>
-      <Note title="France" shipped={france} source={<>Source: Citeo, Guide du tarif des emballages ménagers 2026, <a href={FRANCE_URL}>{FRANCE_URL}</a>{retrieved}</>}>
+      <Note title="France" shipped={france} source={<>Source: Citeo, Guide du tarif des emballages ménagers 2026, <ExternalLink href={FRANCE_URL} />{retrieved}</>}>
         <Quoted quote={franceQuote} />
       </Note>
-      <Note title="Spain" shipped={spain} source={<>Source: MITECO, FAQ Registro de Productores de Producto, envases (RD 1055/2022), <a href={SPAIN_URL}>{SPAIN_URL}</a>{retrieved}</>}>
+      <Note title="Spain" shipped={spain} source={<>Source: MITECO, FAQ Registro de Productores de Producto, envases (RD 1055/2022), <ExternalLink href={SPAIN_URL} />{retrieved}</>}>
         <p>MITECO materials, to verify against the MITECO DAE form. Glass goes to Ecovidrio, not to the MITECO form.</p>
         <FieldTable left="Your material" right="MITECO material" rows={SPAIN_FIELDS} />
         {SPAIN_QUOTES.map((quote) => (

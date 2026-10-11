@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { SETUPS_CLEARED, emptyStore, loadStore, saveStore } from '../lib/setups'
+import { SETUPS_CLEARED, STORAGE_KEY, emptyStore, loadStore, saveStore } from '../lib/setups'
 import type { Setup, SetupStore } from '../lib/setups'
 
 export function useSetupStore() {
@@ -15,6 +15,16 @@ export function useSetupStore() {
     const reset = () => setStore(emptyStore())
     window.addEventListener(SETUPS_CLEARED, reset)
     return () => window.removeEventListener(SETUPS_CLEARED, reset)
+  }, [])
+
+  useEffect(() => {
+    const reload = (event: StorageEvent) => {
+      if (event.key !== null && event.key !== STORAGE_KEY) return
+      const next = loadStore().store
+      setStore((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next))
+    }
+    window.addEventListener('storage', reload)
+    return () => window.removeEventListener('storage', reload)
   }, [])
 
   const saveSetup = useCallback((setup: Setup, makeDefault: boolean) => {

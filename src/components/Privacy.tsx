@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { leavePrivacy } from '../lib/route'
 import { clearStore } from '../lib/setups'
 
 const REQUESTS = [
@@ -35,7 +36,7 @@ export function Privacy() {
         {message && <p className="small" role="status">{message}</p>}
       </div>
       <p className="muted">eprkilo is not affiliated with or endorsed by Etsy, Inc. Etsy is a trademark of Etsy, Inc.</p>
-      <div><a className="btn btn-secondary" href="#">Back</a></div>
+      <div><button type="button" className="btn btn-secondary" onClick={leavePrivacy}>Back</button></div>
     </div>
   )
 }

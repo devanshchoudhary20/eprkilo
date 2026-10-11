@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { parseCsvString, readCsvFile } from '../lib/parse'
 import type { ItemsFile, ParseOutcome, ReadHandle } from '../lib/parse'
+import { clearRoute, goTo } from '../lib/route'
 import { track } from '../lib/track'
 
 export const MAX_BYTES = 50 * 1024 * 1024
@@ -30,6 +31,7 @@ export function useLoader() {
       return
     }
     nextId.current += 1
+    goTo('share')
     setState({ phase: 'ready', id: nextId.current, fileName, isSample, file: outcome.file })
     if (!isSample) track('parsed')
   }, [])
@@ -69,6 +71,7 @@ export function useLoader() {
 
   const reset = useCallback(() => {
     handle.current?.cancel()
+    clearRoute()
     setState(idle())
   }, [])
 

@@ -1,24 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Layout, SampleBanner } from './components/Chrome'
 import { Landing } from './components/Landing'
+import { LeavePrompt } from './components/LeavePrompt'
 import { Reading, Refused } from './components/ParseMessage'
 import { Privacy } from './components/Privacy'
 import { Workspace } from './components/Workspace'
+import { useHash } from './hooks/useHash'
 import { useLoader } from './hooks/useLoader'
 import type { LoadState } from './hooks/useLoader'
-
-const isPrivacyHash = () => window.location.hash === '#privacy'
-
-function usePrivacyRoute() {
-  const [isPrivacy, setIsPrivacy] = useState(isPrivacyHash)
-  useEffect(() => {
-    const sync = () => setIsPrivacy(isPrivacyHash())
-    window.addEventListener('hashchange', sync)
-    return () => window.removeEventListener('hashchange', sync)
-  }, [])
-  return isPrivacy
-}
+import { goTo } from './lib/route'
 
 type Handlers = { onFile: (file: File) => void; onSample: () => void; onCancel: () => void; questionClosed: boolean; onQuestionClosed: () => void }
 
@@ -37,7 +28,9 @@ function screenFor(state: LoadState, { onFile, onSample, onCancel, questionClose
 
 export default function App() {
   const { state, loadFile, loadSample, reset } = useLoader()
-  const isPrivacy = usePrivacyRoute()
+  const hash = useHash()
+  const isPrivacy = hash === '#privacy'
+  const atStart = state.phase === 'ready' && hash === ''
   const [questionClosed, setQuestionClosed] = useState(false)
   const showSampleBanner = state.phase === 'ready' && state.isSample
   const banner = showSampleBanner ? <SampleBanner onUseOwn={reset} /> : undefined
@@ -47,7 +40,10 @@ export default function App() {
   return (
     <Layout banner={banner}>
       {isPrivacy && <Privacy />}
-      <div hidden={isPrivacy}>{screen}</div>
+      <div hidden={isPrivacy}>
+        {atStart && <LeavePrompt onKeep={() => goTo('share')} onLeave={reset} />}
+        {screen}
+      </div>
     </Layout>
   )
 }

@@ -17,7 +17,7 @@ export function EmptyPeriod({ share, countUnshipped, onUseRange }: Props) {
 
   return (
     <section className="slip empty-period" aria-label="No orders in this period">
-      <h2>{heading}</h2>
+      <h1>{heading}</h1>
       <p className="muted">{body}</p>
       {!noShipDates && fileRange && (
         <button type="button" className="btn btn-primary" onClick={() => onUseRange(fileRange)}>Use {rangeText}</button>

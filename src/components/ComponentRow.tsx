@@ -1,4 +1,4 @@
-import { MATERIALS, materialExample, materialLabel } from '../lib/setups'
+import { GRAMS_LIMIT, MATERIALS, materialExample, materialLabel } from '../lib/setups'
 import type { ComponentDraft, Counts, MaterialKey } from '../lib/setups'
 import { TrashIcon } from './icons'
 
@@ -33,6 +33,7 @@ export function ComponentRow({ item, error, canRemove, onChange, onRemove }: Pro
           type="text"
           inputMode="decimal"
           className="grams-input"
+          maxLength={GRAMS_LIMIT}
           value={item.grams}
           placeholder={example}
           title={example}

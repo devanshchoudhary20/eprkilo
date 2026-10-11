@@ -1,3 +1,4 @@
+import { Scroll } from './Scroll'
 import { kgText, rowTotalMg } from '../lib/kg'
 import type { KgResult, KgRow } from '../lib/kg'
 import type { MaterialKey } from '../lib/setups'
@@ -19,7 +20,7 @@ function Cells({ row, columns }: { row: KgRow; columns: Props['columns'] }) {
 
 export function KgTable({ result, columns }: Props) {
   return (
-    <div className="scroll">
+    <Scroll label="Kilograms by country table">
       <table className="num kg-table">
         <thead>
           <tr>
@@ -47,6 +48,6 @@ export function KgTable({ result, columns }: Props) {
           </tr>
         </tfoot>
       </table>
-    </div>
+    </Scroll>
   )
 }

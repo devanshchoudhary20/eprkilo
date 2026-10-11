@@ -11,7 +11,7 @@ export type KgResult = {
   countries: KgRow[]
   total: KgRow
   outside: KgRow
-  usedSetups: Array<{ name: string; isDefault: boolean }>
+  usedSetups: Array<{ id: string; name: string; isDefault: boolean }>
   defaultListings: number
   quantityAssumed: number
   totalMissing: number
@@ -114,7 +114,7 @@ export function computeKg(file: ItemsFile, period: Period, countUnshipped: boole
     countries: rows,
     total,
     outside,
-    usedSetups: store.setups.filter((setup) => used.has(setup.id)).map((setup) => ({ name: setup.name, isDefault: setup.id === store.defaultId })),
+    usedSetups: store.setups.filter((setup) => used.has(setup.id)).map((setup) => ({ id: setup.id, name: setup.name, isDefault: setup.id === store.defaultId })),
     defaultListings: defaultKeys.size,
     quantityAssumed: eu.filter((row) => row.quantityAssumed).length,
     totalMissing: eu.filter((row) => row.totalMissing).length,

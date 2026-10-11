@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { createFlight } from '../lib/flight'
 import { exportFileName, toCsv, toTsv } from '../lib/export'
 import type { ExportTable } from '../lib/export'
 import { ANSWER_LIMIT, sendSwitchAnswer } from '../lib/switchAnswer'
@@ -32,6 +33,7 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
   const [sending, setSending] = useState(false)
   const [sendFailed, setSendFailed] = useState(false)
   const fallback = useRef<HTMLTextAreaElement>(null)
+  const flight = useRef(createFlight())
   const fileName = exportFileName(from, to, isSample)
   const fallbackRows = Math.min(table.rows.length + 1, 8)
   const exported = status.kind === 'saved' || status.kind === 'copied'
@@ -39,51 +41,62 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
   const sendLabel = sending ? 'Sending...' : 'Send answer'
   const prepLabel = preparing ? 'Preparing...' : null
   const canSend = answer.trim().length > 0
+  const nothing = table.rows.length < 2
+  const disabled = preparing || nothing
 
   const prepare = async () => {
     setPreparing(true)
-    // one frame so "Preparing..." paints before the table is built
-    await new Promise((resolve) => requestAnimationFrame(resolve))
+    // a timer, not a frame: hidden tabs never run animation frames
+    await new Promise((resolve) => setTimeout(resolve, 0))
   }
 
   const download = async () => {
     await prepare()
-    saveFile(fileName, toCsv(table))
-    setPreparing(false)
-    setStatus({ kind: 'saved', name: fileName })
+    try {
+      saveFile(fileName, toCsv(table))
+      setStatus({ kind: 'saved', name: fileName })
+    } finally {
+      setPreparing(false)
+    }
   }
 
   const copy = async () => {
     await prepare()
-    const text = toTsv(table)
-    setPreparing(false)
+    let text = ''
+    try {
+      text = toTsv(table)
+    } finally {
+      setPreparing(false)
+    }
     try {
       await navigator.clipboard.writeText(text)
       setStatus({ kind: 'copied', rows: table.rows.length })
     } catch {
       setStatus({ kind: 'blocked', text })
-      requestAnimationFrame(() => fallback.current?.select())
+      setTimeout(() => fallback.current?.select(), 0)
     }
   }
 
-  const send = async () => {
-    setSending(true)
-    setSendFailed(false)
-    const ok = await sendSwitchAnswer(answer)
-    setSending(false)
-    if (!ok) {
-      setSendFailed(true)
-      return
-    }
-    setSent(true)
-    onQuestionClosed()
-  }
+  const send = () =>
+    flight.current(async () => {
+      setSending(true)
+      setSendFailed(false)
+      const ok = await sendSwitchAnswer(answer)
+      setSending(false)
+      if (!ok) {
+        setSendFailed(true)
+        return
+      }
+      setSent(true)
+      onQuestionClosed()
+    })
 
   return (
     <div className="export">
       <div className="screen-actions">
-        <button type="button" className="btn btn-primary" disabled={preparing} onClick={download}>{prepLabel ?? 'Download CSV'}</button>
-        <button type="button" className="btn btn-secondary" disabled={preparing} onClick={copy}>{prepLabel ?? 'Copy table'}</button>
+        <button type="button" className="btn btn-primary" disabled={disabled} onClick={download}>{prepLabel ?? 'Download CSV'}</button>
+        <button type="button" className="btn btn-secondary" disabled={disabled} onClick={copy}>{prepLabel ?? 'Copy table'}</button>
+        {nothing && <p className="muted">Nothing to export for this period.</p>}
       </div>
       {status.kind === 'saved' && <p className="saved-note" role="status">{`Saved ${status.name} to your downloads.`}</p>}
       {status.kind === 'copied' && <p className="saved-note" role="status">{`Copied ${status.rows} rows. Paste into a spreadsheet.`}</p>}
@@ -98,7 +111,7 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
       )}
       {showQuestion && (
         <section className="slip question" aria-labelledby="switch-title">
-          <h3 id="switch-title">One question, optional</h3>
+          <h2 id="switch-title">One question, optional</h2>
           <label className="field" htmlFor="switch-answer">Which tool or service would this replace for you?</label>
           <textarea
             id="switch-answer"

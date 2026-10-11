@@ -15,6 +15,7 @@ export function Reading({ fileName, rows, fraction, onCancel }: Reading) {
   const rowsLabel = rowsText(rows)
   return (
     <div className="centered">
+      <h1 className="sr-only">Reading your file</h1>
       <div className="slip reading">
         <span className="muted">Reading</span>
         <span className="mono">{fileName}</span>
@@ -80,6 +81,7 @@ export function Refused({ refusal, onFile }: { refusal: Refusal; onFile: (file: 
   const body = refusal.kind === 'not-etsy' ? <NotEtsy found={refusal.found} missing={refusal.missing} /> : <MessageAlert title={title} />
   return (
     <div className={className}>
+      <h1 className="sr-only">Your file could not be used</h1>
       {body}
       <div><FilePicker label="Choose another file" variant="primary" onFile={onFile} /></div>
     </div>
