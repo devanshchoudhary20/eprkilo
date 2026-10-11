@@ -1,6 +1,6 @@
 import { formatDate } from '../lib/dates'
 import type { Period, ShareResult } from '../lib/compute'
-import { periodLabel } from '../lib/shareView'
+import { EXCEL_DATES_LINE, datesRewritten, periodLabel } from '../lib/shareView'
 
 type Props = { share: ShareResult; countUnshipped: boolean; onUseRange: (range: Period) => void }
 
@@ -13,12 +13,14 @@ export function EmptyPeriod({ share, countUnshipped, onUseRange }: Props) {
     ? `Your file has orders from ${rangeText}. Pick dates inside that range.`
     : 'Your file has no orders with a date we can read.'
   const heading = noShipDates ? 'None of these orders has a ship date yet.' : title
+  const rewritten = datesRewritten(share)
   const body = noShipDates ? "Tick 'Count orders without a ship date' to include them." : detail
 
   return (
     <section className="slip empty-period" aria-label="No orders in this period">
       <h1>{heading}</h1>
       <p className="muted">{body}</p>
+      {rewritten && <p role="status">{EXCEL_DATES_LINE}</p>}
       {!noShipDates && fileRange && (
         <button type="button" className="btn btn-primary" onClick={() => onUseRange(fileRange)}>Use {rangeText}</button>
       )}

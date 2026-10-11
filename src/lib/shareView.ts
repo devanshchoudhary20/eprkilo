@@ -37,6 +37,10 @@ function withSeparators(texts: Array<Omit<NoticePart, 'sep'>>): NoticePart[] {
   return texts.map((part, index) => ({ ...part, sep: index === texts.length - 1 ? '.' : ', ' }))
 }
 
+export const EXCEL_DATES_LINE = "These dates are not in Etsy's format. If you opened and saved this file in Excel, drop the original download from Shop Manager instead."
+
+export const datesRewritten = (share: ShareResult) => share.badDate > 0 && share.includedRows === 0
+
 export function buildNotice(share: ShareResult): Notice {
   const names = share.unrecognisedByName.map((entry) => `${entry.name} ${entry.count}`).join(', ')
   const leftOut = [

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { parseCsvString } from './parse'
 import { computeShare, defaultPeriod } from './compute'
+import { datesRewritten } from './shareView'
 
 const fixture = (name: string) => readFileSync(new URL(`../../fixtures/${name}`, import.meta.url), 'utf8')
 
@@ -173,6 +174,14 @@ describe('defaultPeriod', () => {
 })
 
 describe('real export formats', () => {
+  it('flags a file Excel re-saved: every date is bad and nothing is included', () => {
+    const file = items(fixture('items-excel-de-resave.csv'))
+    const share = computeShare(file, defaultPeriod(file), false)
+    expect(share.includedRows).toBe(0)
+    expect(datesRewritten(share)).toBe(true)
+    expect(datesRewritten(computeShare(items(fixture('items-real-2025.csv')), { from: '2025-01-01', to: '2025-12-31' }, false))).toBe(false)
+  })
+
   it('reads Date Posted as the ship date and counts every row without ticking the box', () => {
     const file = items(fixture('items-date-posted.csv'))
     const share = computeShare(file, defaultPeriod(file), false)
