@@ -7,7 +7,7 @@ type Props = {
   file: ItemsFile
   store: SetupStore
   onSet: (key: string, setupId: string) => void
-  onReset: () => void
+  onReset: (keys: string[]) => void
   onSetups: () => void
   onResults: () => void
 }
@@ -20,20 +20,25 @@ export function MappingScreen({ file, store, onSet, onReset, onSetups, onResults
   const [confirmed, setConfirmed] = useState(false)
   const fallback = store.setups.find((setup) => setup.id === store.defaultId)
   const known = new Set(store.setups.map((setup) => setup.id))
+  const defaultName = fallback?.name ?? 'your default setup'
   const rows = listings.map((listing) => {
     const chosen = store.mapping[listing.key]
     const valid = chosen !== undefined && known.has(chosen)
-    return { ...listing, value: valid ? chosen : (store.defaultId ?? ''), note: BY_NOTE[listing.by] }
+    const wasDeleted = chosen !== undefined && !valid
+    const deletedNote = `Was '${store.removed[chosen ?? ''] ?? 'a deleted setup'}', now ${defaultName}`
+    const note = wasDeleted ? deletedNote : BY_NOTE[listing.by]
+    return { ...listing, value: valid ? chosen : (store.defaultId ?? ''), note, idText: listing.listingId || 'none' }
   })
+  const movedCount = rows.filter((row) => row.note.startsWith('Was ')).length
   const usingDefault = rows.filter((row) => row.value === store.defaultId).length
-  const defaultName = fallback?.name ?? 'your default setup'
   const noIdNote = noKeyRows > 0 ? ` ${plural(noKeyRows, 'row')} had no Listing ID, SKU or item name and use the default.` : ''
-  const sub = `${plural(rows.length, 'listing')} in your file. ${usingDefault.toLocaleString('en-US')} use '${defaultName}'.${noIdNote}`
+  const movedNote = movedCount > 0 ? ` ${plural(movedCount, 'listing')} moved to your default because ${movedCount === 1 ? 'its' : 'their'} setup was deleted.` : ''
+  const sub = `${plural(rows.length, 'listing')} in your file. ${usingDefault.toLocaleString('en-US')} use '${defaultName}'.${noIdNote}${movedNote}`
   const confirmText = `All ${rows.length.toLocaleString('en-US')} listings use '${defaultName}'.`
   const hasSetups = store.setups.length > 0
 
   const reset = () => {
-    onReset()
+    onReset(listings.map((listing) => listing.key))
     setConfirmed(true)
   }
   const choose = (key: string, id: string) => {
@@ -81,7 +86,7 @@ export function MappingScreen({ file, store, onSet, onReset, onSetups, onResults
                     {row.name}
                     {row.note && <span className="small muted map-note">{row.note}</span>}
                   </th>
-                  <td>{row.listingId || 'none'}</td>
+                  <td>{row.idText}</td>
                   <td>{row.units.toLocaleString('en-US')}</td>
                   <td>
                     <select aria-label={`Setup for ${row.name}`} value={row.value} onChange={(e) => choose(row.key, e.target.value)}>

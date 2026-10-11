@@ -4,7 +4,6 @@ import { columnsFor, computeKg } from '../lib/kg'
 import type { Period } from '../lib/compute'
 import type { ItemsFile } from '../lib/parse'
 import type { SetupStore } from '../lib/setups'
-import { track } from '../lib/track'
 import { KgTable } from './KgTable'
 
 type Props = {
@@ -15,11 +14,12 @@ type Props = {
   store: SetupStore
   onSetups: () => void
   onPeriod: () => void
+  onCalculated: () => void
 }
 
 const plural = (count: number, word: string) => `${count.toLocaleString('en-US')} ${word}${count === 1 ? '' : 's'}`
 
-export function ResultsScreen({ file, isSample, period, countUnshipped, store, onSetups, onPeriod }: Props) {
+export function ResultsScreen({ file, isSample, period, countUnshipped, store, onSetups, onPeriod, onCalculated }: Props) {
   const [showEmpty, setShowEmpty] = useState(false)
   const result = useMemo(() => computeKg(file, period, countUnshipped, store), [file, period, countUnshipped, store])
   const { visible, hidden } = columnsFor(result, showEmpty)
@@ -30,17 +30,17 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
   const usedText = used || 'none'
   const strip = [
     `Setups used: ${usedText}.`,
-    `${plural(result.defaultMapped, 'row')} use the default setup.`,
+    `${plural(result.defaultListings, 'listing')} use the default.`,
     result.quantityAssumed > 0 && `${plural(result.quantityAssumed, 'row')} assumed quantity 1.`,
     result.totalMissing > 0 && `${plural(result.totalMissing, 'row')} with item total missing.`,
   ].filter(Boolean).join(' ')
-  const toggleLabel = `Show empty materials (${hidden} hidden)`
+  const toggleLabel = showEmpty ? 'Show empty materials' : `Show empty materials (${hidden} hidden)`
   const showToggle = hidden > 0 || showEmpty
   const ready = hasSetups && hasRows && result.hasWeights
 
   useEffect(() => {
-    if (ready && !isSample) track('calculated')
-  }, [ready, isSample])
+    if (ready && !isSample) onCalculated()
+  }, [ready, isSample, onCalculated])
 
   if (!hasSetups) {
     return (

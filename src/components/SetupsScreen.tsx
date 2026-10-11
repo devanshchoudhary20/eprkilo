@@ -34,10 +34,11 @@ export function SetupsScreen({ store, unreadable, onSave, onDelete, onMapping, o
   }
   const handleDelete = (id: string) => {
     onDelete(id)
-    setSelectedId(null)
+    setSelectedId(store.setups.find((setup) => setup.id !== id)?.id ?? null)
     setBlank(blankDraft())
   }
 
+  const freshName = fresh?.name.trim() || 'New setup'
   const items = store.setups.map((setup) => ({
     id: setup.id,
     name: setup.name,
@@ -70,7 +71,7 @@ export function SetupsScreen({ store, unreadable, onSave, onDelete, onMapping, o
             {isFresh && (
               <li>
                 <span className="setup-item current">
-                  <span>{fresh.name.trim() || 'New setup'}</span>
+                  <span>{freshName}</span>
                   <span className="tag mono">Not saved yet</span>
                 </span>
               </li>

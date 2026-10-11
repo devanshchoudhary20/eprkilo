@@ -11,7 +11,7 @@ export type KgResult = {
   countries: KgRow[]
   total: KgRow
   usedSetups: Array<{ name: string; isDefault: boolean }>
-  defaultMapped: number
+  defaultListings: number
   quantityAssumed: number
   totalMissing: number
   hasWeights: boolean
@@ -75,28 +75,28 @@ export function computeKg(file: ItemsFile, period: Period, countUnshipped: boole
 
   const countries = new Map<string, KgRow>()
   const used = new Set<string>()
-  let defaultMapped = 0
+  const defaultKeys = new Set<string>()
   orders.forEach((items) => {
     const place = classifyCountry(items[0].shipCountry)
     if (place.kind !== 'eu') return
     const entry = countries.get(place.iso) ?? { iso: place.iso, name: place.name, parcels: 0, units: 0, mg: zeros() }
     entry.parcels += 1
-    let biggest: MilliByMaterial | null = null
+    const parcelParts: MilliByMaterial[] = []
     items.forEach((row) => {
       const { setup, isDefault } = setupFor(row)
+      const key = listingKey(row)?.key
       entry.units += row.quantity
-      if (isDefault) defaultMapped += 1
-      if (!setup) return
+      if (isDefault && key) defaultKeys.add(key)
+      const part = setup && parts.get(setup.id)
+      if (!setup || !part) return
       used.add(setup.id)
-      const part = parts.get(setup.id)
-      if (!part) return
-      MATERIAL_KEYS.forEach((key) => {
-        entry.mg[key] += part.unit[key] * row.quantity
+      MATERIAL_KEYS.forEach((material) => {
+        entry.mg[material] += part.unit[material] * row.quantity
       })
-      if (!biggest || sum(part.parcel) > sum(biggest)) biggest = part.parcel
+      parcelParts.push(part.parcel)
     })
-    const chosenParcel: MilliByMaterial | null = biggest
-    if (chosenParcel) MATERIAL_KEYS.forEach((key) => (entry.mg[key] += chosenParcel[key]))
+    const biggest = parcelParts.reduce<MilliByMaterial | null>((best, part) => (!best || sum(part) > sum(best) ? part : best), null)
+    if (biggest) MATERIAL_KEYS.forEach((material) => (entry.mg[material] += biggest[material]))
     countries.set(place.iso, entry)
   })
 
@@ -111,7 +111,7 @@ export function computeKg(file: ItemsFile, period: Period, countUnshipped: boole
     countries: rows,
     total,
     usedSetups: store.setups.filter((setup) => used.has(setup.id)).map((setup) => ({ name: setup.name, isDefault: setup.id === store.defaultId })),
-    defaultMapped,
+    defaultListings: defaultKeys.size,
     quantityAssumed: eu.filter((row) => row.quantityAssumed).length,
     totalMissing: eu.filter((row) => row.totalMissing).length,
     hasWeights: sum(total.mg) > 0,

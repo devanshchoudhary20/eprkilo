@@ -41,8 +41,7 @@ export function SetupEditor({ initial, isSaved, isDefault, hasOthers, onSave, on
       return
     }
     onSave(check.setup, switchOn)
-    const becomesDefault = switchOn || isDefault
-    setMessage(becomesDefault ? `Saved. '${check.setup.name}' is your default setup.` : `Saved. '${check.setup.name}' is saved.`)
+    setMessage(switchOn ? `Saved. '${check.setup.name}' is your default setup.` : `Saved. '${check.setup.name}' is saved.`)
   }
 
   const deleteThis = () => {

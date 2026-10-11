@@ -23,8 +23,9 @@ export function useSetupStore() {
   const deleteSetup = useCallback((id: string) => {
     setStore((prev) => {
       const setups = prev.setups.filter((item) => item.id !== id)
-      const mapping = Object.fromEntries(Object.entries(prev.mapping).filter(([, value]) => value !== id))
-      return { setups, defaultId: prev.defaultId === id ? (setups[0]?.id ?? null) : prev.defaultId, mapping }
+      const gone = prev.setups.find((item) => item.id === id)
+      const removed = gone ? { ...prev.removed, [id]: gone.name } : prev.removed
+      return { ...prev, setups, removed, defaultId: prev.defaultId === id ? (setups[0]?.id ?? null) : prev.defaultId }
     })
   }, [])
 
@@ -32,8 +33,8 @@ export function useSetupStore() {
     setStore((prev) => ({ ...prev, mapping: { ...prev.mapping, [key]: setupId } }))
   }, [])
 
-  const resetMapping = useCallback(() => {
-    setStore((prev) => ({ ...prev, mapping: {} }))
+  const resetMapping = useCallback((keys: string[]) => {
+    setStore((prev) => ({ ...prev, mapping: Object.fromEntries(Object.entries(prev.mapping).filter(([key]) => !keys.includes(key))) }))
   }, [])
 
   return { store, unreadable, saveSetup, deleteSetup, setMapping, resetMapping }

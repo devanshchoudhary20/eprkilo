@@ -24,7 +24,7 @@ const cardInMailer: Setup = {
   ],
 }
 
-const storeOf = (setups: Setup[], mapping: Record<string, string> = {}): SetupStore => ({ setups, defaultId: setups[0].id, mapping })
+const storeOf = (setups: Setup[], mapping: Record<string, string> = {}): SetupStore => ({ setups, defaultId: setups[0].id, mapping, removed: {} })
 
 describe('kg per country against the hand computation', () => {
   it('matches fixtures/items.expected.json to three decimals', () => {
@@ -84,6 +84,24 @@ describe('parcel rule', () => {
   })
 })
 
+describe('rows outside the period', () => {
+  const heavy: Setup = { id: 'h', name: 'H', components: [{ material: 'paper', grams: 50, counts: 'parcel' }] }
+  const small: Setup = { id: 's', name: 'S', components: [{ material: 'paper', grams: 5, counts: 'parcel' }] }
+  const head = `${HEAD}\n`
+  const csv = `${head}1,111,1,Germany,500,$5.00,USD,03/01/26,03/01/26,Heavy\n2,222,1,Germany,500,$5.00,USD,,03/01/26,Small`
+
+  it('does not let an unshipped heavier box set the parcel weight', () => {
+    const [germany] = computeKg(items(csv), YEAR, false, storeOf([small, heavy], { 'id:111': 's', 'id:222': 'h' })).countries
+    expect(kgText(germany.mg.paper)).toBe('0.005')
+  })
+
+  it('does not let a heavier box dated outside the period set the parcel weight', () => {
+    const late = csv.replace('03/01/26,03/01/26,Heavy', '03/01/27,03/01/27,Heavy')
+    const [germany] = computeKg(items(late), YEAR, true, storeOf([small, heavy], { 'id:111': 'h', 'id:222': 's' })).countries
+    expect(kgText(germany.mg.paper)).toBe('0.005')
+  })
+})
+
 describe('inputs that could produce NaN', () => {
   it('rejects empty, letters, zero and negative grams', () => {
     expect(validateGrams('')).toHaveProperty('error')
@@ -98,6 +116,12 @@ describe('inputs that could produce NaN', () => {
     const store = parseStore(text)
     expect(store.setups[0].components).toHaveLength(1)
     expect(store.defaultId).toBe('a')
+  })
+
+  it('lands on the safe empty store for null and the old array shape', () => {
+    const empty = { setups: [], defaultId: null, mapping: {}, removed: {} }
+    expect(parseStore('null')).toEqual(empty)
+    expect(parseStore('[{"id":"a"}]')).toEqual(empty)
   })
 
   it('shows zero as 0.000 when there is no weight', () => {

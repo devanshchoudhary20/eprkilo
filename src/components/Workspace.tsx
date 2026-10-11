@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { usePeriodState } from '../hooks/usePeriodState'
 import { useSetupStore } from '../hooks/useSetupStore'
 import type { ItemsFile } from '../lib/parse'
+import { track } from '../lib/track'
 import { MappingScreen } from './MappingScreen'
 import { ResultsScreen } from './ResultsScreen'
 import { SetupsScreen } from './SetupsScreen'
@@ -14,6 +15,13 @@ export function Workspace({ fileName, file, isSample, onFile }: Props) {
   const [step, setStep] = useState<Step>('share')
   const period = usePeriodState(file)
   const { store, unreadable, saveSetup, deleteSetup, setMapping, resetMapping } = useSetupStore()
+
+  const calculated = useRef(false)
+  const onCalculated = useCallback(() => {
+    if (calculated.current) return
+    calculated.current = true
+    track('calculated')
+  }, [])
 
   const go = (next: Step) => () => {
     setStep(next)
@@ -40,6 +48,7 @@ export function Workspace({ fileName, file, isSample, onFile }: Props) {
           store={store}
           onSetups={go('setups')}
           onPeriod={go('share')}
+          onCalculated={onCalculated}
         />
       )}
       {step !== 'share' && (

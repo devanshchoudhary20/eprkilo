@@ -18,11 +18,11 @@ export const materialExample = (key: MaterialKey) => MATERIALS.find((material) =
 
 export type Component = { material: MaterialKey; grams: number; counts: Counts }
 export type Setup = { id: string; name: string; components: Component[] }
-export type SetupStore = { setups: Setup[]; defaultId: string | null; mapping: Record<string, string> }
+export type SetupStore = { setups: Setup[]; defaultId: string | null; mapping: Record<string, string>; removed: Record<string, string> }
 export type ComponentDraft = { key: string; material: MaterialKey; grams: string; counts: Counts }
 export type SetupDraft = { id: string; name: string; components: ComponentDraft[] }
 
-export const emptyStore = (): SetupStore => ({ setups: [], defaultId: null, mapping: {} })
+export const emptyStore = (): SetupStore => ({ setups: [], defaultId: null, mapping: {}, removed: {} })
 
 const STORAGE_KEY = 'eprkilo-setups-v1'
 const isMaterial = (value: unknown): value is MaterialKey => MATERIAL_KEYS.includes(value as MaterialKey)
@@ -51,16 +51,15 @@ function sanitizeSetup(raw: unknown): Setup | null {
   return { id: candidate.id, name: candidate.name.trim() || 'Untitled setup', components }
 }
 
+const stringMap = (raw: unknown): Record<string, string> =>
+  Object.fromEntries(Object.entries(typeof raw === 'object' && raw ? raw : {}).filter(([, value]) => typeof value === 'string')) as Record<string, string>
+
 export function parseStore(text: string): SetupStore {
-  const data = JSON.parse(text) as { setups?: unknown; defaultId?: unknown; mapping?: unknown }
+  const data = (JSON.parse(text) ?? {}) as { setups?: unknown; defaultId?: unknown; mapping?: unknown; removed?: unknown }
   const setups = (Array.isArray(data.setups) ? data.setups : []).flatMap((item) => sanitizeSetup(item) ?? [])
   const wanted = typeof data.defaultId === 'string' ? data.defaultId : null
   const defaultId = setups.find((setup) => setup.id === wanted)?.id ?? setups[0]?.id ?? null
-  const mapping: Record<string, string> = {}
-  Object.entries(typeof data.mapping === 'object' && data.mapping ? data.mapping : {}).forEach(([key, value]) => {
-    if (typeof value === 'string') mapping[key] = value
-  })
-  return { setups, defaultId, mapping }
+  return { setups, defaultId, mapping: stringMap(data.mapping), removed: stringMap(data.removed) }
 }
 
 export function loadStore(): { store: SetupStore; unreadable: boolean } {
