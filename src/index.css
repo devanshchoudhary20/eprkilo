@@ -280,6 +280,8 @@ table.num td.flag-cell { text-align: left; }
   .anchor-row { gap: 24px; }
   .anchor-figure { font-size: 56px; }
   .footer-inner { flex-direction: column; }
+  .topbar a, .footer-inner a, .landing-intro a, .link-btn { display: inline-flex; align-items: center; min-height: 44px; margin-block: -10px; }
+  .check { min-height: 44px; height: auto; }
   .sample-banner-inner { flex-direction: column; align-items: flex-start; }
   .strip, .receipt, .table-card { padding: 16px; }
   table.num th:first-child, table.num td:first-child { white-space: normal; min-width: 96px; }
