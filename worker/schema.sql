@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS events (
+  id INTEGER PRIMARY KEY,
+  ts TEXT NOT NULL,
+  event TEXT NOT NULL,
+  source TEXT NOT NULL,
+  answer TEXT
+);

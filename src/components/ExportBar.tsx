@@ -28,11 +28,14 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
   const [status, setStatus] = useState<Status>({ kind: 'idle' })
   const [answer, setAnswer] = useState('')
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [sendFailed, setSendFailed] = useState(false)
   const fallback = useRef<HTMLTextAreaElement>(null)
   const fileName = exportFileName(from, to, isSample)
   const fallbackRows = Math.min(table.rows.length + 1, 8)
   const exported = status.kind === 'saved' || status.kind === 'copied'
   const showQuestion = exported && !isSample && !questionClosed
+  const sendLabel = sending ? 'Sending...' : 'Send answer'
   const canSend = answer.trim().length > 0
 
   const download = () => {
@@ -51,8 +54,15 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
     }
   }
 
-  const send = () => {
-    if (!sendSwitchAnswer(answer)) return
+  const send = async () => {
+    setSending(true)
+    setSendFailed(false)
+    const ok = await sendSwitchAnswer(answer)
+    setSending(false)
+    if (!ok) {
+      setSendFailed(true)
+      return
+    }
     setSent(true)
     onQuestionClosed()
   }
@@ -88,10 +98,11 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
             onChange={(event) => setAnswer(event.target.value)}
           />
           <div className="question-actions">
-            <button type="button" className="btn btn-primary" disabled={!canSend} onClick={send}>Send answer</button>
+            <button type="button" className="btn btn-primary" disabled={!canSend || sending} onClick={send}>{sendLabel}</button>
             <button type="button" className="link-btn" onClick={onQuestionClosed}>Skip</button>
             <span className="mono small muted">{`${answer.length} / ${ANSWER_LIMIT}`}</span>
           </div>
+          {sendFailed && <p className="alert" role="alert">Could not send. Your answer is still here. Try again or skip.</p>}
           <p className="muted small">Only your answer is sent: nothing from your file. It is the one piece of text that leaves this browser.</p>
         </section>
       )}

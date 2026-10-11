@@ -112,3 +112,15 @@ export function checkDraft(draft: SetupDraft): DraftCheck {
   const setup = errorCount === 0 ? { id: draft.id, name: draft.name.trim(), components } : null
   return { nameError, gramsErrors, setup, errorCount }
 }
+
+export const SETUPS_CLEARED = 'eprkilo-setups-cleared'
+
+export function clearStore(): boolean {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    return false
+  }
+  window.dispatchEvent(new Event(SETUPS_CLEARED))
+  return true
+}

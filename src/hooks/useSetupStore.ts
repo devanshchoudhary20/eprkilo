@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { loadStore, saveStore } from '../lib/setups'
+import { SETUPS_CLEARED, emptyStore, loadStore, saveStore } from '../lib/setups'
 import type { Setup, SetupStore } from '../lib/setups'
 
 export function useSetupStore() {
@@ -10,6 +10,12 @@ export function useSetupStore() {
   useEffect(() => {
     saveStore(store)
   }, [store])
+
+  useEffect(() => {
+    const reset = () => setStore(emptyStore())
+    window.addEventListener(SETUPS_CLEARED, reset)
+    return () => window.removeEventListener(SETUPS_CLEARED, reset)
+  }, [])
 
   const saveSetup = useCallback((setup: Setup, makeDefault: boolean) => {
     setStore((prev) => {

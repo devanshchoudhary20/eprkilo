@@ -1,0 +1,11 @@
+name = "eprkilo-counter"
+main = "index.ts"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "eprkilo-counter"
+database_id = "4d559580-d2df-475f-8ead-2955cbc564b8"
+
+[observability]
+enabled = false

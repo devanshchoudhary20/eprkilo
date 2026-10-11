@@ -9,7 +9,7 @@ import { sendSwitchAnswer } from './lib/switchAnswer'
 import { track } from './lib/track'
 import type { SetupStore } from './lib/setups'
 
-vi.mock('./lib/track', () => ({ track: vi.fn() }))
+vi.mock('./lib/track', () => ({ track: vi.fn(async () => true) }))
 
 const outcome = parseCsvString(readFileSync(new URL('../fixtures/items.csv', import.meta.url), 'utf8'))
 if (outcome.kind !== 'items') throw new Error('fixture must be an items file')
@@ -60,8 +60,8 @@ describe('export table', () => {
 describe('switch answer', () => {
   beforeEach(() => vi.mocked(track).mockClear())
 
-  it('passes only the answer to track, trimmed and capped at 200 characters', () => {
-    expect(sendSwitchAnswer(`  Lizenzero${'x'.repeat(300)}  `)).toBe(true)
+  it('passes only the answer to track, trimmed and capped at 200 characters', async () => {
+    expect(await sendSwitchAnswer(`  Lizenzero${'x'.repeat(300)}  `)).toBe(true)
     expect(track).toHaveBeenCalledTimes(1)
     const [event, extra] = vi.mocked(track).mock.calls[0]
     expect(event).toBe('switch')
@@ -69,8 +69,8 @@ describe('switch answer', () => {
     expect(extra?.answer).toHaveLength(200)
   })
 
-  it('sends nothing for an empty answer', () => {
-    expect(sendSwitchAnswer('   ')).toBe(false)
+  it('sends nothing for an empty answer', async () => {
+    expect(await sendSwitchAnswer('   ')).toBe(false)
     expect(track).not.toHaveBeenCalled()
   })
 })
