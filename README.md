@@ -4,7 +4,7 @@ Drop your Etsy order-items CSV on the page and see how much of your shop is the 
 
 Live: https://eprkilo.pages.dev
 
-![The share summary after a calculation](docs/share-success.png)
+![The share summary after a calculation](docs/share.png)
 
 ## Run
 
