@@ -5,9 +5,27 @@ const SOURCE_KEY = 'eprkilo-source'
 const SOURCE_PATTERN = /^[a-z0-9-]{1,40}$/
 const FALLBACK_SOURCE = 'direct'
 
-export function sourceFrom(search: string): string {
+const REFERRER_SOURCES: Record<string, string> = {
+  'news.ycombinator.com': 'hn',
+  'old.reddit.com': 'reddit',
+  'www.reddit.com': 'reddit',
+  'bsky.app': 'bluesky',
+  't.co': 'x',
+  'dev.to': 'devto',
+}
+
+// hostname only: the path and query of a referrer are never read
+function sourceFromReferrer(referrer: string): string {
+  try {
+    return REFERRER_SOURCES[new URL(referrer).hostname.toLowerCase()] ?? FALLBACK_SOURCE
+  } catch {
+    return FALLBACK_SOURCE
+  }
+}
+
+export function sourceFrom(search: string, referrer = ''): string {
   const raw = new URLSearchParams(search).get('utm_source')?.trim().toLowerCase() ?? ''
-  return SOURCE_PATTERN.test(raw) ? raw : FALLBACK_SOURCE
+  return SOURCE_PATTERN.test(raw) ? raw : sourceFromReferrer(referrer)
 }
 
 // sessionStorage keeps the visit's source across in-app navigation; a blocked store falls back to the URL
@@ -15,11 +33,11 @@ export function visitSource(): string {
   try {
     const stored = sessionStorage.getItem(SOURCE_KEY)
     if (stored && SOURCE_PATTERN.test(stored)) return stored
-    const fresh = sourceFrom(window.location.search)
+    const fresh = sourceFrom(window.location.search, document.referrer)
     sessionStorage.setItem(SOURCE_KEY, fresh)
     return fresh
   } catch {
-    return sourceFrom(window.location.search)
+    return sourceFrom(window.location.search, document.referrer)
   }
 }
 
