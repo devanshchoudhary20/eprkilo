@@ -32,8 +32,8 @@ The Worker accepts POST only from https://eprkilo.pages.dev, its preview subdoma
 The page makes at most these requests, to the counter Worker, and nothing else:
 
 - `{"event":"view","source":"direct"}` when the page opens
-- `{"event":"parsed","source":"direct"}` when the country table appears for your file
-- `{"event":"calculated","source":"direct"}` when the kilogram results appear for your file
+- `{"event":"parsed","source":"direct"}` the first time the country table appears in a tab
+- `{"event":"calculated","source":"direct"}` the first time the kilogram results appear in a tab
 - `{"event":"sample","source":"direct"}` when you press "Try a sample file"
 - `{"event":"switch","source":"direct","answer":"..."}` only if you send the optional answer
 

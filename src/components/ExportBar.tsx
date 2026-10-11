@@ -44,30 +44,25 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
   const nothing = table.rows.length < 2
   const disabled = preparing || nothing
 
-  const prepare = async () => {
+  // the buttons re-enable even if the work throws
+  const prepared = async <T,>(work: () => T): Promise<T> => {
     setPreparing(true)
     // a timer, not a frame: hidden tabs never run animation frames
     await new Promise((resolve) => setTimeout(resolve, 0))
+    try {
+      return work()
+    } finally {
+      setPreparing(false)
+    }
   }
 
   const download = async () => {
-    await prepare()
-    try {
-      saveFile(fileName, toCsv(table))
-      setStatus({ kind: 'saved', name: fileName })
-    } finally {
-      setPreparing(false)
-    }
+    await prepared(() => saveFile(fileName, toCsv(table)))
+    setStatus({ kind: 'saved', name: fileName })
   }
 
   const copy = async () => {
-    await prepare()
-    let text = ''
-    try {
-      text = toTsv(table)
-    } finally {
-      setPreparing(false)
-    }
+    const text = await prepared(() => toTsv(table))
     try {
       await navigator.clipboard.writeText(text)
       setStatus({ kind: 'copied', rows: table.rows.length })

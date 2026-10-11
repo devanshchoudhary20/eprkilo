@@ -18,7 +18,7 @@ export function SetupEditor({ initial, isSaved, current, isDefault, hasOthers, o
   const [wantDefault, setWantDefault] = useState(false)
   const [attempted, setAttempted] = useState(false)
   const [baseline, setBaseline] = useState(() => JSON.stringify(current))
-  const [message, setMessage] = useState<string | null>(null)
+  const [savedNote, setSavedNote] = useState<{ text: string; draft: SetupDraft; wantDefault: boolean } | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const check = checkDraft(draft)
   const isLocked = isDefault || !hasOthers
@@ -28,6 +28,8 @@ export function SetupEditor({ initial, isSaved, current, isDefault, hasOthers, o
   const summary = attempted && check.errorCount > 0 ? `Fix ${check.errorCount} ${check.errorCount === 1 ? 'field' : 'fields'} to save.` : null
   const nameClass = nameError ? 'field invalid' : 'field'
   const changedElsewhere = isSaved && JSON.stringify(current) !== baseline
+  // any edit after saving makes the note stale, so it only shows for the exact saved draft
+  const message = savedNote && savedNote.draft === draft && savedNote.wantDefault === wantDefault && !changedElsewhere ? savedNote.text : null
   const switchHelp = isDefault && hasOthers ? 'To change the default, switch it on for another setup.' : null
 
   const update = (key: string, next: ComponentDraft) =>
@@ -40,12 +42,12 @@ export function SetupEditor({ initial, isSaved, current, isDefault, hasOthers, o
     setAttempted(true)
     setDeleteError(null)
     if (!check.setup) {
-      setMessage(null)
+      setSavedNote(null)
       return
     }
     onSave(check.setup, switchOn)
     setBaseline(JSON.stringify(check.setup))
-    setMessage(switchOn ? `Saved. '${check.setup.name}' is your default setup.` : `Saved. '${check.setup.name}' is saved.`)
+    setSavedNote({ text: switchOn ? `Saved. '${check.setup.name}' is your default setup.` : `Saved. '${check.setup.name}' is saved.`, draft, wantDefault })
   }
 
   const deleteThis = () => {

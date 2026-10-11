@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import { parseCsvString, readCsvFile } from '../lib/parse'
 import type { ItemsFile, ParseOutcome, ReadHandle } from '../lib/parse'
 import { clearRoute, goTo } from '../lib/route'
-import { track } from '../lib/track'
+import { track, trackOnce } from '../lib/track'
 
 export const MAX_BYTES = 50 * 1024 * 1024
 export const SAMPLE_NAME = 'sample-order-items.csv'
@@ -33,7 +33,7 @@ export function useLoader() {
     nextId.current += 1
     goTo('share')
     setState({ phase: 'ready', id: nextId.current, fileName, isSample, file: outcome.file })
-    if (!isSample) track('parsed')
+    if (!isSample) trackOnce('parsed')
   }, [])
 
   const loadFile = useCallback(

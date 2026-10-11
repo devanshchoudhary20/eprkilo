@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { formatDate } from '../lib/dates'
 import { buildExport, shippedTo } from '../lib/export'
-import { columnsFor, computeKg } from '../lib/kg'
+import { columnsFor, computeKg, weightlessText, weightlessUsed } from '../lib/kg'
 import { computeShare } from '../lib/compute'
 import type { Period } from '../lib/compute'
 import type { ItemsFile } from '../lib/parse'
-import { hasNoWeight } from '../lib/setups'
 import type { SetupStore } from '../lib/setups'
 import { plural } from '../lib/shareView'
 import { ExportBar } from './ExportBar'
@@ -38,11 +37,9 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
   const hasRows = result.countries.length > 0
   const used = result.usedSetups.map((setup) => (setup.isDefault ? `${setup.name} (default)` : setup.name)).join(', ')
   const usedText = used || 'none'
-  const weightless = store.setups.filter((setup) => hasNoWeight(setup) && result.usedSetups.some((item) => item.id === setup.id))
-  const weightlessName = weightless[0]?.name ?? result.usedSetups[0]?.name ?? 'A setup'
-  const one = weightless.length === 1
-  const quoted = weightless.map((setup) => `'${setup.name}'`).join(', ')
-  const partialWarning = weightless.length > 0 ? `${quoted} ${one ? 'has' : 'have'} no weight yet, so ${one ? 'its' : 'their'} listings add 0.000 kg. Fix ${one ? 'it' : 'them'} in packaging setups.` : null
+  const weightless = weightlessUsed(store, result)
+  const weightlessNames = weightless.length > 0 ? weightless.map((setup) => setup.name) : [result.usedSetups[0]?.name ?? 'A setup']
+  const blocked = weightless.length > 0 || !result.hasWeights
   const strip = [
     `Setups used: ${usedText}.`,
     `${plural(result.defaultListings, 'listing')} use the default.`,
@@ -51,7 +48,7 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
   ].filter(Boolean).join(' ')
   const toggleLabel = showEmpty ? 'Show empty materials' : `Show empty materials (${hidden} hidden)`
   const showToggle = hidden > 0 || showEmpty
-  const ready = hasSetups && hasRows && result.hasWeights
+  const ready = hasSetups && hasRows && !blocked
 
   useEffect(() => {
     if (ready && !isSample) onCalculated()
@@ -82,12 +79,12 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
     )
   }
 
-  if (!result.hasWeights) {
+  if (blocked) {
     return (
       <div className="screen">
         <header className="screen-head"><h1>{title}</h1></header>
         <section className="slip empty-period">
-          <p className="muted">{`'${weightlessName}' has no weight yet, so kilograms cannot be added up. Fix it in packaging setups.`}</p>
+          <p className="muted">{weightlessText(weightlessNames)}</p>
           <button type="button" className="btn btn-primary" onClick={onSetups}>Open packaging setups</button>
         </section>
       </div>
@@ -98,7 +95,6 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
     <div className="screen">
       <header className="screen-head"><h1>{title}</h1></header>
       <p className="strip-note" role="status">{strip}</p>
-      {partialWarning && <p className="notice-line alert-line" role="alert">{partialWarning}</p>}
       <section className="slip table-card" aria-label="Kilograms by country">
         <KgTable result={result} columns={visible} />
         {showToggle && (

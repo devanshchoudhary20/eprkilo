@@ -10,15 +10,26 @@ export const goTo = (route: string) => {
 }
 
 // drops the hash without adding a history entry
-export const clearRoute = () => window.history.replaceState(null, '', window.location.pathname + window.location.search)
+export const clearRoute = () => {
+  cameFromApp = false
+  window.history.replaceState(null, '', window.location.pathname + window.location.search)
+}
 
-let beforePrivacy = window.location.hash === PRIVACY ? '' : window.location.hash
+// a hashchange into privacy means the entry before it is this app's
+let cameFromApp = false
 
-export const leavePrivacy = () => goTo(beforePrivacy)
+export function leavePrivacy() {
+  if (cameFromApp) {
+    cameFromApp = false
+    window.history.back()
+    return
+  }
+  goTo('')
+}
 
 export function subscribeHash(onChange: () => void) {
   const handle = () => {
-    if (window.location.hash !== PRIVACY) beforePrivacy = window.location.hash
+    if (window.location.hash === PRIVACY) cameFromApp = true
     onChange()
   }
   window.addEventListener('hashchange', handle)

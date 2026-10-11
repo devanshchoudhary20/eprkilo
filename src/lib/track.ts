@@ -23,6 +23,24 @@ export function visitSource(): string {
   }
 }
 
+const memoryFired = new Set<string>()
+
+// a tab session fires each of these once; a blocked store falls back to once per page load
+export function firstInSession(event: TrackEvent): boolean {
+  const key = `eprkilo-fired-${event}`
+  try {
+    if (sessionStorage.getItem(key)) return false
+    sessionStorage.setItem(key, '1')
+    return true
+  } catch {
+    if (memoryFired.has(key)) return false
+    memoryFired.add(key)
+    return true
+  }
+}
+
+export const trackOnce = (event: TrackEvent) => (firstInSession(event) ? track(event) : Promise.resolve(true))
+
 // Resolves false on any failure; only the switch answer shows that to the user.
 export async function track(event: TrackEvent, extra?: { answer?: string }): Promise<boolean> {
   if (import.meta.env.DEV) return true

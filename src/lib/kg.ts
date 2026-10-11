@@ -2,7 +2,7 @@ import { classifyCountry } from './countries'
 import { rowsInPeriod } from './compute'
 import type { Period } from './compute'
 import type { ItemRow, ItemsFile } from './parse'
-import { MATERIAL_KEYS, MATERIALS } from './setups'
+import { MATERIAL_KEYS, MATERIALS, hasNoWeight } from './setups'
 import type { MaterialKey, Setup, SetupStore } from './setups'
 
 export type MilliByMaterial = Record<MaterialKey, number>
@@ -128,3 +128,12 @@ export function columnsFor(result: KgResult, showEmpty: boolean) {
   return { visible: showEmpty ? all : withWeight, hidden: all.length - withWeight.length }
 }
 
+
+export const weightlessUsed = (store: SetupStore, result: KgResult) =>
+  store.setups.filter((setup) => hasNoWeight(setup) && result.usedSetups.some((item) => item.id === setup.id))
+
+export function weightlessText(names: string[]): string {
+  const one = names.length <= 1
+  const quoted = names.map((name) => `'${name}'`).join(', ')
+  return `${quoted} ${one ? 'has' : 'have'} no weight yet, so kilograms cannot be added up. Fix ${one ? 'it' : 'them'} in packaging setups.`
+}

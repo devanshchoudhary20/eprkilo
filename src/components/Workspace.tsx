@@ -5,7 +5,7 @@ import { useSetupStore } from '../hooks/useSetupStore'
 import type { ItemsFile } from '../lib/parse'
 import { goTo } from '../lib/route'
 import type { Step } from '../lib/route'
-import { track } from '../lib/track'
+import { trackOnce } from '../lib/track'
 import { MappingScreen } from './MappingScreen'
 import { ResultsScreen } from './ResultsScreen'
 import { SetupsScreen } from './SetupsScreen'
@@ -22,7 +22,7 @@ export function Workspace({ fileName, file, isSample, onFile, questionClosed, on
   const onCalculated = useCallback(() => {
     if (calculated.current) return
     calculated.current = true
-    track('calculated')
+    trackOnce('calculated')
   }, [])
 
   const go = (next: Step) => () => {

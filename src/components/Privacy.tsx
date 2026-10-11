@@ -4,8 +4,8 @@ import { clearStore } from '../lib/setups'
 
 const REQUESTS = [
   { body: '{"event":"view","source":"direct"}', when: 'when the page opens' },
-  { body: '{"event":"parsed","source":"direct"}', when: 'when the country table appears for your file' },
-  { body: '{"event":"calculated","source":"direct"}', when: 'when the kilogram results appear for your file' },
+  { body: '{"event":"parsed","source":"direct"}', when: 'the first time the country table appears in this tab' },
+  { body: '{"event":"calculated","source":"direct"}', when: 'the first time the kilogram results appear in this tab' },
   { body: '{"event":"sample","source":"direct"}', when: 'when you press Try a sample file' },
   { body: '{"event":"switch","source":"direct","answer":"..."}', when: 'only if you press Send answer on the optional question' },
 ]
@@ -28,6 +28,7 @@ export function Privacy() {
         ))}
       </ul>
       <p className="muted small">source is direct, or the utm_source in the link you arrived by. They go to eprkilo-counter.sesh-relay.workers.dev, a counter that stores the time, the event, the source, and for the optional question only the answer text. It uses your IP address in memory only to limit how fast requests arrive, and never stores it.</p>
+      <p className="muted small">Besides those, the page loads its own files from eprkilo.pages.dev, and Cloudflare may send network error reports (NEL) about page loads. Neither carries anything from your file.</p>
       <p>Nothing else leaves your browser. No row counts, no countries, no money, and no IP address is stored. Your answer to the question is stored as you typed it; please do not type order details into it.</p>
       <p>You can check this: open your browser&apos;s Network panel and use the page.</p>
       <p>Setups and listing choices live in this browser&apos;s local storage on your device.</p>

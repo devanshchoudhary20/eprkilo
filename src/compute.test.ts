@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { computeKg, kgText } from './lib/kg'
+import { computeKg, kgText, weightlessText, weightlessUsed } from './lib/kg'
 import { parseCsvString } from './lib/parse'
-import { NAME_LIMIT, hasNoWeight, parseStore, validateGrams } from './lib/setups'
+import { NAME_LIMIT, parseStore, validateGrams } from './lib/setups'
 import type { Setup, SetupStore } from './lib/setups'
 
 const fixture = (name: string) => readFileSync(new URL(`../fixtures/${name}`, import.meta.url), 'utf8')
@@ -136,13 +136,15 @@ describe('inputs that could produce NaN', () => {
     expect(store.removed.b).toHaveLength(NAME_LIMIT)
   })
 
-  it('names a used setup that weighs 0 g while another has weight', () => {
+  it('blocks the table and names every used setup with no weight, even when another has weight', () => {
     const text = JSON.stringify({ setups: [{ id: 'z', name: 'Zero', components: [{ material: 'paper', grams: 0, counts: 'unit' }] }, cardInMailer], defaultId: 'card', mapping: { 'id:9001': 'z' } })
     const store = parseStore(text)
     const file = items(`${HEAD}\n1,9001,1,Germany,A,$5.00,USD,03/01/26,03/01/26,Mug\n2,9002,1,Germany,B,$5.00,USD,03/01/26,03/01/26,Cup`)
     const result = computeKg(file, YEAR, false, store)
-    const weightless = store.setups.filter((setup) => hasNoWeight(setup) && result.usedSetups.some((used) => used.id === setup.id))
+    const names = weightlessUsed(store, result).map((setup) => setup.name)
     expect(result.hasWeights).toBe(true)
-    expect(weightless.map((setup) => setup.name)).toEqual(['Zero'])
+    expect(names).toEqual(['Zero'])
+    expect(weightlessText(names)).toBe("'Zero' has no weight yet, so kilograms cannot be added up. Fix it in packaging setups.")
+    expect(weightlessText(['A', 'B'])).toBe("'A', 'B' have no weight yet, so kilograms cannot be added up. Fix them in packaging setups.")
   })
 })
