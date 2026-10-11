@@ -60,7 +60,7 @@ export function useLoader() {
   const loadSample = useCallback(async () => {
     track('sample')
     try {
-      const { default: text } = await import('../../fixtures/items.csv?raw')
+      const { default: text } = await import('../../fixtures/sample-order-items.csv?raw')
       finish(parseCsvString(text), SAMPLE_NAME, true)
     } catch {
       setState(idle('The sample file could not be loaded. Reload the page and try again.'))

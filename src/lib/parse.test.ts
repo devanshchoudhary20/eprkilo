@@ -142,3 +142,32 @@ describe('share view on fixtures/items.csv', () => {
     expect(empty.fileRange).toEqual({ from: '2026-03-04', to: '2026-03-25' })
   })
 })
+
+describe('fixtures/sample-order-items.csv', () => {
+  const file = items(fixture('sample-order-items.csv'))
+  const share = computeShare(file, defaultPeriod(file), false)
+
+  it('has no unrecognised countries and an EU order share of 15 to 20 percent', () => {
+    const euShare = (share.eu.orders / share.shop.orders) * 100
+    expect(share.unrecognisedRows).toBe(0)
+    expect(euShare).toBeGreaterThanOrEqual(15)
+    expect(euShare).toBeLessThanOrEqual(20)
+    expect(share.currencies).toEqual(['USD'])
+  })
+
+  it('has exactly one imperfect row, an unshipped one', () => {
+    expect(share).toMatchObject({ notShipped: 1, badDate: 0, noCountry: 0, quantityAssumed: 0, totalMissing: 0 })
+  })
+})
+
+describe('defaultPeriod', () => {
+  it('uses ship dates before sale dates so unshipped rows do not pick the year', () => {
+    const csv = [
+      HEAD,
+      '1,1,1,Spain,1,$1.00,USD,,03/01/25,Card',
+      '2,1,1,Spain,2,$1.00,USD,,03/02/25,Card',
+      '3,1,1,Spain,3,$1.00,USD,03/03/26,03/01/25,Card',
+    ].join('\n')
+    expect(defaultPeriod(items(csv))).toEqual({ from: '2026-01-01', to: '2026-12-31' })
+  })
+})

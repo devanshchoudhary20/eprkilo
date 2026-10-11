@@ -1,6 +1,7 @@
 import { formatDate } from './dates'
 import { formatMoney } from './money'
 import { UNKNOWN_CURRENCY } from './parse'
+import { salesShare } from './compute'
 import type { ShareResult, Totals } from './compute'
 
 export type SalesColumn = { key: string; label: string }
@@ -20,6 +21,11 @@ export function salesColumns(share: ShareResult): SalesColumn[] {
 export function salesCell(totals: Totals, column: SalesColumn): string {
   if (column.key === 'none') return 'no data'
   return formatMoney(totals.sales[column.key] ?? 0)
+}
+
+export function shareCell(share: ShareResult, column: SalesColumn): string {
+  if (column.key === 'none') return 'no data'
+  return salesShare(share.eu.sales[column.key] ?? 0, share.shop.sales[column.key] ?? 0)
 }
 
 export function periodLabel(from: string, to: string): string {
@@ -42,7 +48,7 @@ export function buildNotice(share: ShareResult): Notice {
   ].filter((part) => part !== false)
   const guessed = [
     share.quantityAssumed > 0 && { text: `${rows(share.quantityAssumed)} with no quantity (counted as 1)` },
-    share.hasSales && share.totalMissing > 0 && { text: `${rows(share.totalMissing)} with no item total (counted as 0.00)` },
+    share.totalMissing > 0 && { text: `${rows(share.totalMissing)} with no item total (counted as 0.00)` },
   ].filter((part) => part !== false)
   return { leftOut: withSeparators(leftOut), inTotal: withSeparators(inTotal), guessed: withSeparators(guessed) }
 }

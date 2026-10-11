@@ -74,9 +74,11 @@ function NotEtsy({ found, missing }: { found: string[]; missing: string[] }) {
 export function Refused({ refusal, onFile }: { refusal: Refusal; onFile: (file: File) => void }) {
   const isNotEtsy = refusal.kind === 'not-etsy'
   const title = refusal.kind === 'orders' ? ORDERS_MESSAGE : EMPTY_MESSAGE
+  const className = isNotEtsy ? 'centered wide' : 'centered'
+  const body = refusal.kind === 'not-etsy' ? <NotEtsy found={refusal.found} missing={refusal.missing} /> : <MessageAlert title={title} />
   return (
-    <div className={isNotEtsy ? 'centered wide' : 'centered'}>
-      {refusal.kind === 'not-etsy' ? <NotEtsy found={refusal.found} missing={refusal.missing} /> : <MessageAlert title={title} />}
+    <div className={className}>
+      {body}
       <div><FilePicker label="Choose another file" variant="primary" onFile={onFile} /></div>
     </div>
   )

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Layout, SampleBanner } from './components/Chrome'
 import { Landing } from './components/Landing'
 import { Reading, Refused } from './components/ParseMessage'
 import { Privacy } from './components/Privacy'
 import { ShareView } from './components/ShareView'
 import { useLoader } from './hooks/useLoader'
+import type { LoadState } from './hooks/useLoader'
 
 const isPrivacyHash = () => window.location.hash === '#privacy'
 
@@ -18,26 +20,33 @@ function usePrivacyRoute() {
   return isPrivacy
 }
 
+type Handlers = { onFile: (file: File) => void; onSample: () => void; onCancel: () => void }
+
+function screenFor(state: LoadState, { onFile, onSample, onCancel }: Handlers): ReactNode {
+  switch (state.phase) {
+    case 'idle':
+      return <Landing notice={state.notice} onFile={onFile} onSample={onSample} />
+    case 'reading':
+      return <Reading fileName={state.fileName} rows={state.rows} fraction={state.fraction} onCancel={onCancel} />
+    case 'refused':
+      return <Refused refusal={state.refusal} onFile={onFile} />
+    case 'ready':
+      return <ShareView key={state.id} fileName={state.fileName} file={state.file} onFile={onFile} />
+  }
+}
+
 export default function App() {
   const { state, loadFile, loadSample, reset } = useLoader()
   const isPrivacy = usePrivacyRoute()
   const showSampleBanner = state.phase === 'ready' && state.isSample
   const banner = showSampleBanner ? <SampleBanner onUseOwn={reset} /> : undefined
+  const screen = screenFor(state, { onFile: loadFile, onSample: loadSample, onCancel: reset })
 
-  if (isPrivacy) {
-    return (
-      <Layout banner={banner}>
-        <Privacy />
-      </Layout>
-    )
-  }
-
+  // the screen stays mounted under Privacy so the period and checkbox survive the round trip
   return (
     <Layout banner={banner}>
-      {state.phase === 'idle' && <Landing notice={state.notice} onFile={loadFile} onSample={loadSample} />}
-      {state.phase === 'reading' && <Reading fileName={state.fileName} rows={state.rows} fraction={state.fraction} onCancel={reset} />}
-      {state.phase === 'refused' && <Refused refusal={state.refusal} onFile={loadFile} />}
-      {state.phase === 'ready' && <ShareView key={state.id} fileName={state.fileName} file={state.file} onFile={loadFile} />}
+      {isPrivacy && <Privacy />}
+      <div hidden={isPrivacy}>{screen}</div>
     </Layout>
   )
 }

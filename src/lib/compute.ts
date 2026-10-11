@@ -53,13 +53,16 @@ export function effectiveDate(row: ItemRow, countUnshipped: boolean): string | n
 }
 
 export function defaultPeriod(file: ItemsFile): Period {
-  const tally = new Map<string, number>()
-  file.rows.forEach((row) => {
-    const date = row.shipDate ?? row.saleDate
-    if (!date) return
-    const year = date.slice(0, 4)
-    tally.set(year, (tally.get(year) ?? 0) + 1)
-  })
+  const tallyYears = (pick: (row: ItemRow) => string | null) => {
+    const tally = new Map<string, number>()
+    file.rows.forEach((row) => {
+      const date = pick(row)
+      if (date) tally.set(date.slice(0, 4), (tally.get(date.slice(0, 4)) ?? 0) + 1)
+    })
+    return tally
+  }
+  const shipped = tallyYears((row) => row.shipDate)
+  const tally = shipped.size > 0 ? shipped : tallyYears((row) => row.saleDate)
   const [topYear] = [...tally.entries()].sort((a, b) => b[1] - a[1] || b[0].localeCompare(a[0]))[0] ?? [
     String(new Date().getFullYear()),
   ]

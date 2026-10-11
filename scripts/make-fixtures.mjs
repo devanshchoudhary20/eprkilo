@@ -46,10 +46,10 @@ const ITEMS = [
   ["#1025", "Finland", "1", "$12.00", "USD", "soon", "9001", "Greeting card, blank"],
 ]
 
-const itemRows = ITEMS.map(([orderId, country, quantity, total, currency, shipped, listing, name], index) => {
+const toCsvRows = (items) => items.map(([orderId, country, quantity, total, currency, shipped, listing, name, saleDate = "03/01/26"], index) => {
   const row = Object.fromEntries(HEADERS.map((header) => [header, ""]))
   Object.assign(row, {
-    "Sale Date": "03/01/26", "Item Name": name, Buyer: `Buyer ${index + 1}`, Quantity: quantity, Price: total,
+    "Sale Date": saleDate, "Item Name": name, Buyer: `Buyer ${index + 1}`, Quantity: quantity, Price: total,
     "Item Total": total, Currency: currency, "Transaction ID": String(5000 + index), "Listing ID": listing,
     "Date Shipped": shipped, "Ship Country": country, "Order ID": orderId, Variations: "Size: A4, Finish: matte",
     "Order Type": "online", "Listings Type": "listing", "Payment Type": "online_cc",
@@ -58,7 +58,29 @@ const itemRows = ITEMS.map(([orderId, country, quantity, total, currency, shippe
 })
 
 const bom = "﻿"
-writeFileSync(join(OUT, "items.csv"), `${bom}${HEADERS.join(",")}\n${itemRows.join("\n")}\n`)
+writeFileSync(join(OUT, "items.csv"), `${bom}${HEADERS.join(",")}\n${toCsvRows(ITEMS).join("\n")}\n`)
+
+// Sample: USD only, 50 orders, 9 to the EU, one unshipped row, no unrecognised countries.
+const SAMPLE_COUNTRIES = [
+  ...Array(3).fill("Germany"), ...Array(2).fill("France"), ...Array(2).fill("Netherlands"), "Ireland", "Spain",
+  ...Array(28).fill("United States"), ...Array(8).fill("United Kingdom"), ...Array(3).fill("Canada"), ...Array(2).fill("Australia"),
+]
+const SAMPLE_PRODUCTS = [["9001", "Greeting card, blank", 6], ["9002", "Enamel pin", 12], ["9003", "Art print A4", 24]]
+let seed = 7
+const next = (limit) => {
+  seed = (seed * 1103515245 + 12345) % 2147483648
+  return seed % limit
+}
+const pad = (n) => String(n).padStart(2, "0")
+const sampleItems = SAMPLE_COUNTRIES.map((country, index) => {
+  const [listing, name, price] = SAMPLE_PRODUCTS[next(3)]
+  const quantity = 1 + next(3)
+  const shipped = new Date(Date.UTC(2026, 0, 3 + ((index * 5) % 270)))
+  const shippedText = `${pad(shipped.getUTCMonth() + 1)}/${pad(shipped.getUTCDate())}/26`
+  const unshipped = index === 40
+  return [`#${2001 + index}`, country, String(quantity), `$${(price * quantity).toFixed(2)}`, "USD", unshipped ? "" : shippedText, listing, name, shippedText]
+})
+writeFileSync(join(OUT, "sample-order-items.csv"), `${HEADERS.join(",")}\n${toCsvRows(sampleItems).join("\n")}\n`)
 
 const ordersHeaders = ["Sale Date", "Order ID", "Buyer User ID", "Full Name", "Number of Items", "Payment Type", "Order Value", "Currency", "Ship Country"]
 writeFileSync(join(OUT, "orders.csv"), `${ordersHeaders.join(",")}\n03/01/26,1001,77,Ada Buyer,2,online_cc,$50.00,USD,Germany\n`)

@@ -16,12 +16,15 @@ export function ShareView({ fileName, file, onFile }: Props) {
   const [draft, setDraft] = useState<Period>(initial)
   const [applied, setApplied] = useState<Period>(initial)
   const [countUnshipped, setCountUnshipped] = useState(false)
-  const settled = useDeferredValue({ applied, countUnshipped })
-  const pending = settled.applied !== applied || settled.countUnshipped !== countUnshipped
+  const settledPeriod = useDeferredValue(applied)
+  const settledUnshipped = useDeferredValue(countUnshipped)
+  const pending = settledPeriod !== applied || settledUnshipped !== countUnshipped
   const share = useMemo(
-    () => computeShare(file, settled.applied, settled.countUnshipped),
-    [file, settled],
+    () => computeShare(file, settledPeriod, settledUnshipped),
+    [file, settledPeriod, settledUnshipped],
   )
+  const rowsLabel = `${file.rowCount.toLocaleString('en-US')} ${file.rowCount === 1 ? 'row' : 'rows'}`
+  const noSalesNote = `Read ${rowsLabel}. Item sales are missing in this file, so only orders and units are shown.`
   const error = validatePeriod(draft.from, draft.to)
   const isEmpty = share.includedRows === 0
 
@@ -42,11 +45,12 @@ export function ShareView({ fileName, file, onFile }: Props) {
         onCountUnshipped={setCountUnshipped}
         onFile={onFile}
       />
+      {!file.hasSales && <p className="slip strip" role="status">{noSalesNote}</p>}
       {isEmpty ? (
-        <EmptyPeriod share={share} countUnshipped={settled.countUnshipped} onUseRange={changeDraft} />
+        <EmptyPeriod share={share} countUnshipped={settledUnshipped} onUseRange={changeDraft} />
       ) : (
         <>
-          <ShareSummary share={share} countUnshipped={settled.countUnshipped} pending={pending} />
+          <ShareSummary share={share} countUnshipped={settledUnshipped} pending={pending} />
           <NoticeBanner share={share} onCountUnshipped={() => setCountUnshipped(true)} />
           <CountryTable share={share} pending={pending} />
         </>

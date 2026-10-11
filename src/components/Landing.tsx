@@ -24,7 +24,7 @@ export function Landing({ notice, onFile, onSample }: Props) {
           </p>
         </div>
       </div>
-      <p className="landing-note muted">Order Items downloads from Shop Manager, easiest on a computer.</p>
+      <p className="landing-note muted">Order Items downloads from Shop Manager, easiest on a computer. Try the sample here, or open this page on your laptop.</p>
       <div className="landing-drop">
         {notice && (
           <div className="alert landing-alert" role="alert">

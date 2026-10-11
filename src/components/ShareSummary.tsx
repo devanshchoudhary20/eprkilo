@@ -1,21 +1,19 @@
-import { ordersShare, salesShare } from '../lib/compute'
+import { ordersShare } from '../lib/compute'
 import type { ShareResult } from '../lib/compute'
 import { formatDate } from '../lib/dates'
-import { salesCell, salesColumns } from '../lib/shareView'
+import { salesCell, salesColumns, shareCell } from '../lib/shareView'
 
 type Props = { share: ShareResult; countUnshipped: boolean; pending: boolean }
 
 export function ShareSummary({ share, countUnshipped, pending }: Props) {
   const columns = salesColumns(share)
-  const figure = pending ? 'Counting...' : ordersShare(share.eu.orders, share.shop.orders)
+  const orderShare = ordersShare(share.eu.orders, share.shop.orders)
+  const figure = pending ? 'Counting...' : orderShare
   const figureClass = pending ? 'anchor-figure counting' : 'anchor-figure'
   const verb = countUnshipped ? 'counted' : 'shipped'
   const shopOrders = share.shop.orders.toLocaleString('en-US')
   const euOrders = share.eu.orders.toLocaleString('en-US')
   const sub = `${euOrders} of ${shopOrders} orders ${verb} between ${formatDate(share.period.from)} and ${formatDate(share.period.to)}.`
-  const shareCells = columns.map((column) =>
-    share.hasSales ? salesShare(share.eu.sales[column.key] ?? 0, share.shop.sales[column.key] ?? 0) : 'no data',
-  )
   const receiptClass = pending ? 'slip receipt pending-dim' : 'slip receipt'
   const dim = pending ? 'strong muted' : 'strong'
 
@@ -55,9 +53,9 @@ export function ShareSummary({ share, countUnshipped, pending }: Props) {
               </tr>
               <tr className={dim}>
                 <th scope="row">EU share</th>
-                <td>{ordersShare(share.eu.orders, share.shop.orders)}</td>
-                {columns.map((column, index) => (
-                  <td key={column.key}>{shareCells[index]}</td>
+                <td>{orderShare}</td>
+                {columns.map((column) => (
+                  <td key={column.key}>{shareCell(share, column)}</td>
                 ))}
               </tr>
             </tbody>
