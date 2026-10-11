@@ -17,6 +17,9 @@ export const UNKNOWN_CURRENCY = 'Unknown currency'
 
 export type ItemRow = {
   orderId: string
+  listingId: string
+  sku: string
+  itemName: string
   quantity: number
   quantityAssumed: boolean
   shipCountry: string
@@ -64,6 +67,9 @@ function toRow(index: number, get: (name: string) => string, hasSales: boolean):
   const orderId = get('order id').replace(/^#/, '').trim() || get('transaction id') || `row-${index}`
   return {
     orderId,
+    listingId: get('listing id'),
+    sku: get('sku'),
+    itemName: get('item name'),
     quantity: quantityAssumed ? 1 : quantity,
     quantityAssumed,
     shipCountry: get('ship country'),

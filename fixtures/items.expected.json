@@ -1,0 +1,76 @@
+{
+  "setup": "Card in mailer: Paper/cardboard 18 g per unit, Plastic 6 g per parcel; every listing on it",
+  "period": "2026-01-01 to 2026-12-31, by ship date, unshipped not counted",
+  "countries": {
+    "Austria": {
+      "parcels": 1,
+      "units": 1,
+      "paper_kg": "0.018",
+      "plastic_kg": "0.006",
+      "total_kg": "0.024"
+    },
+    "Belgium": {
+      "parcels": 1,
+      "units": 1,
+      "paper_kg": "0.018",
+      "plastic_kg": "0.006",
+      "total_kg": "0.024"
+    },
+    "France": {
+      "parcels": 3,
+      "units": 5,
+      "paper_kg": "0.090",
+      "plastic_kg": "0.018",
+      "total_kg": "0.108"
+    },
+    "Germany": {
+      "parcels": 3,
+      "units": 5,
+      "paper_kg": "0.090",
+      "plastic_kg": "0.018",
+      "total_kg": "0.108"
+    },
+    "Ireland": {
+      "parcels": 1,
+      "units": 2,
+      "paper_kg": "0.036",
+      "plastic_kg": "0.006",
+      "total_kg": "0.042"
+    },
+    "Italy": {
+      "parcels": 1,
+      "units": 1,
+      "paper_kg": "0.018",
+      "plastic_kg": "0.006",
+      "total_kg": "0.024"
+    },
+    "Netherlands": {
+      "parcels": 1,
+      "units": 1,
+      "paper_kg": "0.018",
+      "plastic_kg": "0.006",
+      "total_kg": "0.024"
+    },
+    "Poland": {
+      "parcels": 1,
+      "units": 1,
+      "paper_kg": "0.018",
+      "plastic_kg": "0.006",
+      "total_kg": "0.024"
+    },
+    "Spain": {
+      "parcels": 1,
+      "units": 1,
+      "paper_kg": "0.018",
+      "plastic_kg": "0.006",
+      "total_kg": "0.024"
+    },
+    "Sweden": {
+      "parcels": 1,
+      "units": 1,
+      "paper_kg": "0.018",
+      "plastic_kg": "0.006",
+      "total_kg": "0.024"
+    }
+  }
+}

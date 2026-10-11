@@ -52,6 +52,13 @@ export function effectiveDate(row: ItemRow, countUnshipped: boolean): string | n
   return countUnshipped ? row.saleDate : null
 }
 
+export function rowsInPeriod(file: ItemsFile, period: Period, countUnshipped: boolean): ItemRow[] {
+  return file.rows.filter((row) => {
+    const date = effectiveDate(row, countUnshipped)
+    return date !== null && date >= period.from && date <= period.to
+  })
+}
+
 export function defaultPeriod(file: ItemsFile): Period {
   const tallyYears = (pick: (row: ItemRow) => string | null) => {
     const tally = new Map<string, number>()

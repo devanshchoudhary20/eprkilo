@@ -4,7 +4,7 @@ import { Layout, SampleBanner } from './components/Chrome'
 import { Landing } from './components/Landing'
 import { Reading, Refused } from './components/ParseMessage'
 import { Privacy } from './components/Privacy'
-import { ShareView } from './components/ShareView'
+import { Workspace } from './components/Workspace'
 import { useLoader } from './hooks/useLoader'
 import type { LoadState } from './hooks/useLoader'
 
@@ -31,7 +31,7 @@ function screenFor(state: LoadState, { onFile, onSample, onCancel }: Handlers): 
     case 'refused':
       return <Refused refusal={state.refusal} onFile={onFile} />
     case 'ready':
-      return <ShareView key={state.id} fileName={state.fileName} file={state.file} onFile={onFile} />
+      return <Workspace key={state.id} fileName={state.fileName} file={state.file} isSample={state.isSample} onFile={onFile} />
   }
 }
 

@@ -1,21 +1,23 @@
-import { useDeferredValue, useMemo, useState } from 'react'
-import { computeShare, defaultPeriod } from '../lib/compute'
-import type { Period } from '../lib/compute'
+import { useDeferredValue, useMemo } from 'react'
+import { computeShare } from '../lib/compute'
+import type { usePeriodState } from '../hooks/usePeriodState'
 import type { ItemsFile } from '../lib/parse'
-import { validatePeriod } from '../lib/shareView'
 import { CountryTable } from './CountryTable'
 import { EmptyPeriod } from './EmptyPeriod'
 import { NoticeBanner } from './NoticeBanner'
 import { PeriodStrip } from './PeriodStrip'
 import { ShareSummary } from './ShareSummary'
 
-type Props = { fileName: string; file: ItemsFile; onFile: (file: File) => void }
+type Props = {
+  fileName: string
+  file: ItemsFile
+  period: ReturnType<typeof usePeriodState>
+  onFile: (file: File) => void
+  onDescribe: () => void
+}
 
-export function ShareView({ fileName, file, onFile }: Props) {
-  const initial = useMemo(() => defaultPeriod(file), [file])
-  const [draft, setDraft] = useState<Period>(initial)
-  const [applied, setApplied] = useState<Period>(initial)
-  const [countUnshipped, setCountUnshipped] = useState(false)
+export function ShareView({ fileName, file, period, onFile, onDescribe }: Props) {
+  const { draft, applied, countUnshipped, error, changeDraft, setCountUnshipped } = period
   const settledPeriod = useDeferredValue(applied)
   const settledUnshipped = useDeferredValue(countUnshipped)
   const pending = settledPeriod !== applied || settledUnshipped !== countUnshipped
@@ -25,13 +27,7 @@ export function ShareView({ fileName, file, onFile }: Props) {
   )
   const rowsLabel = `${file.rowCount.toLocaleString('en-US')} ${file.rowCount === 1 ? 'row' : 'rows'}`
   const noSalesNote = `Read ${rowsLabel}. Item sales are missing in this file, so only orders and units are shown.`
-  const error = validatePeriod(draft.from, draft.to)
   const isEmpty = share.includedRows === 0
-
-  const changeDraft = (next: Period) => {
-    setDraft(next)
-    if (!validatePeriod(next.from, next.to)) setApplied(next)
-  }
 
   return (
     <div className="share">
@@ -53,6 +49,9 @@ export function ShareView({ fileName, file, onFile }: Props) {
           <ShareSummary share={share} countUnshipped={settledUnshipped} pending={pending} />
           <NoticeBanner share={share} onCountUnshipped={() => setCountUnshipped(true)} />
           <CountryTable share={share} pending={pending} />
+          <div>
+            <button type="button" className="btn btn-primary" disabled={pending} onClick={onDescribe}>Describe your packaging</button>
+          </div>
         </>
       )}
     </div>

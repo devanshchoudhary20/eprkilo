@@ -1,0 +1,40 @@
+import { useCallback, useEffect, useState } from 'react'
+import { loadStore, saveStore } from '../lib/setups'
+import type { Setup, SetupStore } from '../lib/setups'
+
+export function useSetupStore() {
+  const [initial] = useState(loadStore)
+  const [store, setStore] = useState<SetupStore>(initial.store)
+  const unreadable = initial.unreadable
+
+  useEffect(() => {
+    saveStore(store)
+  }, [store])
+
+  const saveSetup = useCallback((setup: Setup, makeDefault: boolean) => {
+    setStore((prev) => {
+      const exists = prev.setups.some((item) => item.id === setup.id)
+      const setups = exists ? prev.setups.map((item) => (item.id === setup.id ? setup : item)) : [...prev.setups, setup]
+      const defaultId = makeDefault || !prev.defaultId ? setup.id : prev.defaultId
+      return { ...prev, setups, defaultId }
+    })
+  }, [])
+
+  const deleteSetup = useCallback((id: string) => {
+    setStore((prev) => {
+      const setups = prev.setups.filter((item) => item.id !== id)
+      const mapping = Object.fromEntries(Object.entries(prev.mapping).filter(([, value]) => value !== id))
+      return { setups, defaultId: prev.defaultId === id ? (setups[0]?.id ?? null) : prev.defaultId, mapping }
+    })
+  }, [])
+
+  const setMapping = useCallback((key: string, setupId: string) => {
+    setStore((prev) => ({ ...prev, mapping: { ...prev.mapping, [key]: setupId } }))
+  }, [])
+
+  const resetMapping = useCallback(() => {
+    setStore((prev) => ({ ...prev, mapping: {} }))
+  }, [])
+
+  return { store, unreadable, saveSetup, deleteSetup, setMapping, resetMapping }
+}
