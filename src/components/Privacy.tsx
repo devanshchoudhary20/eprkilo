@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ExternalLink } from './ExternalLink'
 import { leavePrivacy } from '../lib/route'
 import { clearStore } from '../lib/setups'
 
@@ -31,6 +32,7 @@ export function Privacy() {
       <p className="muted small">Besides those, the page loads its own files from eprkilo.pages.dev, and Cloudflare may send network error reports (NEL) about page loads. Neither carries anything from your file.</p>
       <p>Nothing else leaves your browser. No row counts, no countries, no money, and no IP address is stored. Your answer to the question is stored as you typed it; please do not type order details into it.</p>
       <p>You can check this: open your browser&apos;s Network panel and use the page.</p>
+      <p>Source code: <ExternalLink href="https://github.com/devanshchoudhary20/eprkilo" /></p>
       <p>Setups and listing choices live in this browser&apos;s local storage on your device.</p>
       <div>
         <button type="button" className="btn btn-secondary" onClick={clear}>Clear saved setups</button>
