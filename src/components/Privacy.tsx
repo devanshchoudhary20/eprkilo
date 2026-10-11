@@ -18,7 +18,7 @@ export function Privacy() {
   return (
     <div className="centered wide">
       <h1>What this page sends</h1>
-      <p>Your Etsy file is never uploaded. It is read in this tab and dropped when you close it. Nothing is stored on a server about your shop.</p>
+      <p>Your Etsy file is never uploaded. It is read in this tab, and the order rows are dropped when you close it. Listing choices and setups stay in this browser. Nothing from your file is stored on a server.</p>
       <h2 className="small-title">The complete list of requests this page makes:</h2>
       <ul className="request-list slip">
         {REQUESTS.map((item) => (
@@ -28,7 +28,7 @@ export function Privacy() {
           </li>
         ))}
       </ul>
-      <p className="muted small">source is direct, or the utm_source in the link you arrived by. They go to eprkilo-counter.sesh-relay.workers.dev, a counter that stores the time, the event, the source, and for the optional question only the answer text. It uses your IP address in memory only to limit how fast requests arrive, and never stores it.</p>
+      <p className="muted small">source is direct, or the utm_source in the link you arrived by. They go to eprkilo-counter.sesh-relay.workers.dev, a counter that stores the time, the event, the source, and for the optional question only the answer text. It uses your IP address in memory only to limit how fast requests arrive, and never stores it. If the link has no utm_source, source can come from the referring site&apos;s domain name (for example news.ycombinator.com), never the full address.</p>
       <p className="muted small">Besides those, the page loads its own files from eprkilo.pages.dev, and Cloudflare may send network error reports (NEL) about page loads. Neither carries anything from your file.</p>
       <p>Nothing else leaves your browser. No row counts, no countries, no money, and no IP address is stored. Your answer to the question is stored as you typed it; please do not type order details into it.</p>
       <p>You can check this: open your browser&apos;s Network panel and use the page.</p>

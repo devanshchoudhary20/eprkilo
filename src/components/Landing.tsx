@@ -15,11 +15,11 @@ export function Landing({ notice, onFile, onSample }: Props) {
     <div className="landing">
       <div className="landing-intro">
         <h1>See how much of your shop the EU is, and what your packaging comes to in kilograms.</h1>
-        <p className="landing-sub">From the file Etsy already gives you; nothing is uploaded.</p>
+        <p className="landing-sub">From the file Etsy already gives you; your file is never uploaded.</p>
         <div className="privacy-strip">
           <LockIcon />
           <p>
-            <span>Your file stays in this browser tab. It is read here, never sent anywhere, and gone when you close the tab.</span>
+            <span>Your file stays in this browser tab. It is read here, never sent anywhere, and the order rows are gone when you close the tab. The listing choices you map (Listing ID, SKU or item name) stay in this browser until you clear them.</span>
             <a href="#privacy">See everything this page sends</a>
           </p>
         </div>

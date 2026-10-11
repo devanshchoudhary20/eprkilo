@@ -123,7 +123,7 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
             <span className="mono small muted">{`${answer.length} / ${ANSWER_LIMIT}`}</span>
           </div>
           {sendFailed && <p className="alert" role="alert">Could not send. Your answer is still here. Try again or skip.</p>}
-          <p className="muted small">Only your answer is sent: nothing from your file. It is the one piece of text that leaves this browser.</p>
+          <p className="muted small">Only your answer is sent: nothing from your file. It is the only thing you type that leaves this browser.</p>
         </section>
       )}
       {sent && <p className="saved-note" role="status">Thanks. Sent.</p>}

@@ -31,7 +31,7 @@ The Worker accepts POST only from https://eprkilo.pages.dev, its preview subdoma
 
 ## Privacy
 
-The page makes at most these requests, to the counter Worker, and nothing else:
+The page makes at most these requests, to the counter Worker. It also loads its own page and asset files from the same origin, and Cloudflare may send network error reports (NEL) about those loads. Nothing else:
 
 - `{"event":"view","source":"direct"}` when the page opens
 - `{"event":"parsed","source":"direct"}` the first time the country table appears in a tab
@@ -39,7 +39,7 @@ The page makes at most these requests, to the counter Worker, and nothing else:
 - `{"event":"sample","source":"direct"}` when you press "Try a sample file"
 - `{"event":"switch","source":"direct","answer":"..."}` only if you send the optional answer
 
-`source` is `direct` or the `utm_source` of the link you arrived by. The Worker stores the time, the event, the source and the answer. It stores no IP address, user agent or country, and does not log request bodies. It uses your IP address in memory only to limit request rate (30 per minute) and never stores it. Nothing from your file leaves the browser.
+`source` is `direct` or the `utm_source` of the link you arrived by. Without one, it can be a short name for the referring site, taken from its domain name only (for example `news.ycombinator.com` becomes `hn`), never the full address. The Worker stores the time, the event, the source and the answer. It stores no IP address, user agent or country, and does not log request bodies. It uses your IP address in memory only to limit request rate (30 per minute) and never stores it. Nothing from your file leaves the browser.
 
 eprkilo does arithmetic on your export. It is not legal or fee advice. eprkilo is not affiliated with or endorsed by Etsy, Inc. Etsy is a trademark of Etsy, Inc.
 
