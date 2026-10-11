@@ -1,5 +1,6 @@
 import { NEEDED_HEADERS } from '../lib/parse'
 import type { Refusal } from '../hooks/useLoader'
+import { rows as rowsText } from '../lib/shareView'
 import { FilePicker } from './FilePicker'
 import { FileXIcon } from './icons'
 
@@ -11,13 +12,14 @@ const MAX_FOUND = 12
 type Reading = { fileName: string; rows: number; fraction: number; onCancel: () => void }
 
 export function Reading({ fileName, rows, fraction, onCancel }: Reading) {
+  const rowsLabel = rowsText(rows)
   return (
     <div className="centered">
       <div className="slip reading">
         <span className="muted">Reading</span>
         <span className="mono">{fileName}</span>
         <progress value={fraction} max={1} aria-label="Reading progress" />
-        <p className="rows-read">{rows.toLocaleString('en-US')} {rows === 1 ? 'row' : 'rows'} read</p>
+        <p className="rows-read">{rowsLabel} read</p>
         <p className="muted">This stays in your browser.</p>
         <div><button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button></div>
       </div>

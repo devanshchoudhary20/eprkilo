@@ -1,4 +1,4 @@
-export type TrackEvent = 'view' | 'parsed' | 'calculated' | 'sample' | 'switch'
+type TrackEvent = 'view' | 'parsed' | 'calculated' | 'sample' | 'switch'
 
 const COUNTER_URL = 'https://eprkilo-counter.sesh-relay.workers.dev'
 const SOURCE_KEY = 'eprkilo-source'

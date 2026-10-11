@@ -63,7 +63,7 @@ const csvField = (value: string) => (/[",\r\n]/.test(value) ? `"${value.replace(
 
 export function toCsv(table: ExportTable): string {
   const lines = [table.header, ...table.rows].map((cells) => cells.map(csvField).join(','))
-  return `﻿${lines.join('\r\n')}\r\n`
+  return `\uFEFF${lines.join('\r\n')}\r\n`
 }
 
 export function toTsv(table: ExportTable): string {

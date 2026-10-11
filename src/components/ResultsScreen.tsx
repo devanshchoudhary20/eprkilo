@@ -37,6 +37,8 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
   const hasRows = result.countries.length > 0
   const used = result.usedSetups.map((setup) => (setup.isDefault ? `${setup.name} (default)` : setup.name)).join(', ')
   const usedText = used || 'none'
+  const weightless = store.setups.find((setup) => setup.components.every((part) => !(part.grams > 0)) && result.usedSetups.some((used) => used.name === setup.name))
+  const weightlessName = weightless?.name ?? result.usedSetups[0]?.name ?? 'A setup'
   const strip = [
     `Setups used: ${usedText}.`,
     `${plural(result.defaultListings, 'listing')} use the default.`,
@@ -80,7 +82,7 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
       <div className="screen">
         <header className="screen-head"><h1>{title}</h1></header>
         <section className="slip empty-period">
-          <p className="muted">Your setups have no weight yet, so kilograms cannot be added up. Add parts with grams in packaging setups.</p>
+          <p className="muted">{`'${weightlessName}' has no weight yet, so kilograms cannot be added up. Fix it in packaging setups.`}</p>
           <button type="button" className="btn btn-primary" onClick={onSetups}>Open packaging setups</button>
         </section>
       </div>

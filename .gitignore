@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .anbu/
+
+.wrangler/
+.dev.vars*
+.env*

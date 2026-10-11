@@ -1,4 +1,5 @@
 import type { Period } from '../lib/compute'
+import { rows } from '../lib/shareView'
 import { FilePicker } from './FilePicker'
 
 type Props = {
@@ -14,7 +15,7 @@ type Props = {
 
 export function PeriodStrip({ fileName, rowCount, draft, error, countUnshipped, onDraft, onCountUnshipped, onFile }: Props) {
   const fieldClass = error ? 'field invalid' : 'field'
-  const rowsLabel = `${rowCount.toLocaleString('en-US')} ${rowCount === 1 ? 'row' : 'rows'} read`
+  const rowsLabel = `${rows(rowCount)} read`
   return (
     <section className="slip strip" aria-label="File and period">
       <div className="strip-top">

@@ -2,6 +2,7 @@ import { useDeferredValue, useMemo } from 'react'
 import { computeShare } from '../lib/compute'
 import type { usePeriodState } from '../hooks/usePeriodState'
 import type { ItemsFile } from '../lib/parse'
+import { rows } from '../lib/shareView'
 import { CountryTable } from './CountryTable'
 import { EmptyPeriod } from './EmptyPeriod'
 import { NoticeBanner } from './NoticeBanner'
@@ -25,7 +26,7 @@ export function ShareView({ fileName, file, period, onFile, onDescribe }: Props)
     () => computeShare(file, settledPeriod, settledUnshipped),
     [file, settledPeriod, settledUnshipped],
   )
-  const rowsLabel = `${file.rowCount.toLocaleString('en-US')} ${file.rowCount === 1 ? 'row' : 'rows'}`
+  const rowsLabel = rows(file.rowCount)
   const noSalesNote = `Read ${rowsLabel}. Item sales are missing in this file, so only orders and units are shown.`
   const isEmpty = share.includedRows === 0
 

@@ -1,6 +1,6 @@
 export const RETRIEVED = '2026-10-11'
 export const ARITHMETIC_LINE = 'eprkilo does arithmetic on your export; it does not tell you what you owe or whether you must register.'
-export const CITEO_THRESHOLD_UNITS = 10_000
+const CITEO_THRESHOLD_UNITS = 10_000
 
 export const GERMANY_URL = 'https://www.verpackungsregister.org/en/system-participation-data-reporting/data-reporting'
 export const FRANCE_URL = 'https://ecd-bo.citeo.com/ecd2/medias/citeo/public/fr/guide-du-tarif-des-emballages-menagers-2026.pdf'

@@ -28,6 +28,7 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
   const [status, setStatus] = useState<Status>({ kind: 'idle' })
   const [answer, setAnswer] = useState('')
   const [sent, setSent] = useState(false)
+  const [preparing, setPreparing] = useState(false)
   const [sending, setSending] = useState(false)
   const [sendFailed, setSendFailed] = useState(false)
   const fallback = useRef<HTMLTextAreaElement>(null)
@@ -36,15 +37,26 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
   const exported = status.kind === 'saved' || status.kind === 'copied'
   const showQuestion = exported && !isSample && !questionClosed
   const sendLabel = sending ? 'Sending...' : 'Send answer'
+  const prepLabel = preparing ? 'Preparing...' : null
   const canSend = answer.trim().length > 0
 
-  const download = () => {
+  const prepare = async () => {
+    setPreparing(true)
+    // one frame so "Preparing..." paints before the table is built
+    await new Promise((resolve) => requestAnimationFrame(resolve))
+  }
+
+  const download = async () => {
+    await prepare()
     saveFile(fileName, toCsv(table))
+    setPreparing(false)
     setStatus({ kind: 'saved', name: fileName })
   }
 
   const copy = async () => {
+    await prepare()
     const text = toTsv(table)
+    setPreparing(false)
     try {
       await navigator.clipboard.writeText(text)
       setStatus({ kind: 'copied', rows: table.rows.length })
@@ -70,8 +82,8 @@ export function ExportBar({ table, from, to, isSample, questionClosed, onQuestio
   return (
     <div className="export">
       <div className="screen-actions">
-        <button type="button" className="btn btn-primary" onClick={download}>Download CSV</button>
-        <button type="button" className="btn btn-secondary" onClick={copy}>Copy table</button>
+        <button type="button" className="btn btn-primary" disabled={preparing} onClick={download}>{prepLabel ?? 'Download CSV'}</button>
+        <button type="button" className="btn btn-secondary" disabled={preparing} onClick={copy}>{prepLabel ?? 'Copy table'}</button>
       </div>
       {status.kind === 'saved' && <p className="saved-note" role="status">{`Saved ${status.name} to your downloads.`}</p>}
       {status.kind === 'copied' && <p className="saved-note" role="status">{`Copied ${status.rows} rows. Paste into a spreadsheet.`}</p>}
