@@ -351,3 +351,41 @@ table.num td.flag-cell { text-align: left; }
   .component-row .row-remove { margin-top: 26px; }
   .editor, .setup-list { padding: 16px; }
 }
+
+.export { display: grid; gap: 16px; }
+.export > * { min-width: 0; }
+.export-text {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--slip);
+  color: var(--ink);
+  font: 15px/1.5 var(--serif);
+  resize: vertical;
+}
+textarea.mono.export-text { font-family: var(--mono); white-space: pre; overflow-x: auto; }
+.question { padding: 24px; display: grid; gap: 12px; max-width: 640px; }
+.question h3 { font-size: 20px; }
+.question-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.question-actions .mono { margin-left: auto; }
+
+.notes { display: grid; gap: 16px; margin-top: 16px; }
+.notes > * { min-width: 0; }
+.notes h2 { font-size: 26px; }
+.note { padding: 24px; display: grid; gap: 16px; }
+.note h3 { font-size: 20px; }
+.note-ship { font-weight: 600; }
+.note-arith { font-style: italic; font-size: 15px; }
+.note-source { overflow-wrap: anywhere; }
+.quote { margin: 0; padding-left: 16px; border-left: 4px solid var(--accent); display: grid; gap: 8px; }
+.quote blockquote { margin: 0; overflow-wrap: anywhere; }
+.quote figcaption { font-size: 15px; overflow-wrap: anywhere; }
+.note-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.note-table th, .note-table td { padding: 8px; text-align: left; border-bottom: 1px solid var(--line); }
+.note-table thead th { color: var(--muted); font-weight: 400; border-bottom-color: var(--border-strong); }
+.note-table tbody th { font-weight: 400; }
+
+@media (max-width: 799px) {
+  .note, .question { padding: 16px; }
+}

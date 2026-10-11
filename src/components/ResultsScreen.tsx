@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { formatDate } from '../lib/dates'
+import { buildExport, shippedTo } from '../lib/export'
 import { columnsFor, computeKg } from '../lib/kg'
+import { computeShare } from '../lib/compute'
 import type { Period } from '../lib/compute'
 import type { ItemsFile } from '../lib/parse'
 import type { SetupStore } from '../lib/setups'
+import { ExportBar } from './ExportBar'
 import { KgTable } from './KgTable'
+import { RegisterNotes } from './RegisterNotes'
 
 type Props = {
   file: ItemsFile
@@ -15,13 +19,17 @@ type Props = {
   onSetups: () => void
   onPeriod: () => void
   onCalculated: () => void
+  questionClosed: boolean
+  onQuestionClosed: () => void
 }
 
 const plural = (count: number, word: string) => `${count.toLocaleString('en-US')} ${word}${count === 1 ? '' : 's'}`
 
-export function ResultsScreen({ file, isSample, period, countUnshipped, store, onSetups, onPeriod, onCalculated }: Props) {
+export function ResultsScreen({ file, isSample, period, countUnshipped, store, onSetups, onPeriod, onCalculated, questionClosed, onQuestionClosed }: Props) {
   const [showEmpty, setShowEmpty] = useState(false)
   const result = useMemo(() => computeKg(file, period, countUnshipped, store), [file, period, countUnshipped, store])
+  const share = useMemo(() => computeShare(file, period, countUnshipped), [file, period, countUnshipped])
+  const table = useMemo(() => buildExport(share, result), [share, result])
   const { visible, hidden } = columnsFor(result, showEmpty)
   const title = `Packaging in kilograms, ${formatDate(period.from)} to ${formatDate(period.to)}`
   const hasSetups = store.setups.length > 0
@@ -94,9 +102,11 @@ export function ResultsScreen({ file, isSample, period, countUnshipped, store, o
       <p className="muted rule">
         How parcels are counted: one parcel per order. Parts that count per item are multiplied by quantity. Parts that count once per order come from the item with the biggest such weight; the biggest box wins, counted once.
       </p>
+      <ExportBar table={table} from={period.from} to={period.to} isSample={isSample} questionClosed={questionClosed} onQuestionClosed={onQuestionClosed} />
       <div className="screen-actions">
         <button type="button" className="link-btn" onClick={onSetups}>Edit packaging setups</button>
       </div>
+      <RegisterNotes germany={shippedTo(share, 'DE')} france={shippedTo(share, 'FR')} spain={shippedTo(share, 'ES')} />
     </div>
   )
 }

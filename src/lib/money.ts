@@ -18,3 +18,5 @@ export function parseMoney(raw: string | undefined): number | null {
 export function formatMoney(cents: number): string {
   return (cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
+
+export const moneyFixed = (cents: number): string => (cents / 100).toFixed(2)

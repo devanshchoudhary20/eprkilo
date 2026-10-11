@@ -16,6 +16,7 @@ export function Workspace({ fileName, file, isSample, onFile }: Props) {
   const period = usePeriodState(file)
   const { store, unreadable, saveSetup, deleteSetup, setMapping, resetMapping } = useSetupStore()
 
+  const [questionClosed, setQuestionClosed] = useState(false)
   const calculated = useRef(false)
   const onCalculated = useCallback(() => {
     if (calculated.current) return
@@ -49,6 +50,8 @@ export function Workspace({ fileName, file, isSample, onFile }: Props) {
           onSetups={go('setups')}
           onPeriod={go('share')}
           onCalculated={onCalculated}
+          questionClosed={questionClosed}
+          onQuestionClosed={() => setQuestionClosed(true)}
         />
       )}
       {step !== 'share' && (
