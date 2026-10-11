@@ -37,6 +37,6 @@ The page makes at most these requests, to the counter Worker, and nothing else:
 - `{"event":"sample","source":"direct"}` when you press "Try a sample file"
 - `{"event":"switch","source":"direct","answer":"..."}` only if you send the optional answer
 
-`source` is `direct` or the `utm_source` of the link you arrived by. The Worker stores the time, the event, the source and the answer. It stores no IP address, user agent or country, and does not log request bodies. Nothing from your file leaves the browser.
+`source` is `direct` or the `utm_source` of the link you arrived by. The Worker stores the time, the event, the source and the answer. It stores no IP address, user agent or country, and does not log request bodies. It uses your IP address in memory only to limit request rate (30 per minute) and never stores it. Nothing from your file leaves the browser.
 
 eprkilo does arithmetic on your export. It is not legal or fee advice. eprkilo is not affiliated with or endorsed by Etsy, Inc. Etsy is a trademark of Etsy, Inc.
